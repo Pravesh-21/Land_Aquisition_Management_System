@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@import "tailwindcss";
+
+/* ============================================
+   BHU-DRISHTI Government Portal Design System
+   ============================================ */
+
+@theme inline {
+  /* --- Government Color Palette --- */
+  --color-gov-navy: #003178;
+  --color-gov-navy-dark: #002171;
+  --color-gov-navy-container: #0D47A1;
+  --color-gov-ochre: #904D00;
+  --color-gov-ochre-bright: #FE932C;
+  --color-gov-ochre-light: #FFDCC3;
+  --color-gov-tertiary: #132E7C;
+  --color-gov-tertiary-container: #2F4694;
+
+  /* --- Surface Colors --- */
+  --color-surface: #F7F9FC;
+  --color-surface-dim: #D8DADD;
+  --color-surface-bright: #F7F9FC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-container-low: #F2F4F7;
+  --color-surface-container: #ECEEF1;
+  --color-surface-container-high: #E6E8EB;
+  --color-surface-container-highest: #E0E3E6;
+  --color-surface-variant: #E0E3E6;
+  --color-background: #F7F9FC;
+
+  /* --- Text Colors --- */
+  --color-on-surface: #191C1E;
+  --color-on-surface-variant: #434652;
+  --color-on-primary: #FFFFFF;
+  --color-on-secondary: #FFFFFF;
+  --color-on-background: #191C1E;
+
+  /* --- Border & Outline --- */
+  --color-outline: #737783;
+  --color-outline-variant: #C3C6D4;
+  --color-border-subtle: #DEE2E6;
+
+  /* --- Status Colors --- */
+  --color-status-success: #006633;
+  --color-status-success-bg: #E6F4EA;
+  --color-status-warning: #904D00;
+  --color-status-warning-bg: #FFF3E0;
+  --color-status-error: #BA1A1A;
+  --color-status-error-bg: #FFDAD6;
+  --color-status-info: #0D47A1;
+  --color-status-info-bg: #D9E2FF;
+
+  /* --- Semantic Colors --- */
+  --color-land-green: #2D5A27;
+  --color-earth-brown: #8B572A;
+
+  /* --- Typography --- */
+  --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
+
+  /* --- Spacing --- */
+  --spacing-stack-sm: 8px;
+  --spacing-stack-md: 16px;
+  --spacing-stack-lg: 32px;
+  --spacing-gutter: 24px;
+  --spacing-margin-x: 32px;
+  --spacing-sidebar: 260px;
+  --spacing-container-max: 1280px;
+  --spacing-gov-banner: 32px;
+  --spacing-topbar: 64px;
+  --spacing-role-bar: 44px;
+}
+
+/* --- Base Resets --- */
+* {
+  border-radius: 0px;
+}
+
+body {
+  font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Material Symbols --- */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* --- Custom Scrollbar (Government Portal Style) --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F2F4F7;
+}
+::-webkit-scrollbar-thumb {
+  background: #C3C6D4;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #737783;
+}
+
+/* --- Government Banner --- */
+.gov-banner {
+  height: 32px;
+  background-color: var(--color-surface-container-high);
+  border-bottom: 1px solid var(--color-outline-variant);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+}
+
+/* --- Sharp Government Table Headers --- */
+.gov-table-header {
+  background-color: var(--color-gov-navy);
+  color: var(--color-on-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- Zebra Striping --- */
+.gov-table-row:nth-child(even) {
+  background-color: #F9FAFB;
+}
+.gov-table-row:nth-child(odd) {
+  background-color: #FFFFFF;
+}
+
+/* --- Status Badges --- */
+.badge-success {
+  background-color: var(--color-status-success-bg);
+  color: var(--color-status-success);
+  border: 1px solid rgba(0, 102, 51, 0.2);
+}
+.badge-warning {
+  background-color: var(--color-status-warning-bg);
+  color: var(--color-status-warning);
+  border: 1px solid rgba(144, 77, 0, 0.2);
+}
+.badge-error {
+  background-color: var(--color-status-error-bg);
+  color: var(--color-status-error);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+}
+.badge-info {
+  background-color: var(--color-status-info-bg);
+  color: var(--color-status-info);
+  border: 1px solid rgba(13, 71, 161, 0.2);
+}
+.badge-neutral {
+  background-color: var(--color-surface-variant);
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-outline-variant);
+}
+
+/* --- Government Card --- */
+.gov-card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0px;
+}
+
+/* --- KPI Card --- */
+.kpi-card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-outline-variant);
+  padding: 24px;
+}
+
+/* --- Sidebar Active State --- */
+.sidebar-active {
+  background-color: var(--color-gov-ochre-bright);
+  color: #663500;
+  font-weight: 700;
+}
+
+/* --- Step Tracker --- */
+.step-complete {
+  background-color: var(--color-gov-navy);
+  color: white;
+}
+.step-current {
+  background-color: var(--color-gov-ochre-bright);
+  color: white;
+}
+.step-pending {
+  background-color: var(--color-surface-variant);
+  border: 1px solid var(--color-outline-variant);
+}
+
+/* --- Print Styles --- */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .gov-card { border: 1px solid #000; }
+}
+
+/* --- Leaflet Overrides --- */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}

@@ -1,0 +1,146 @@
+'use client';
+
+import { mockGrievances } from '@/data/mockData';
+import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
+import { useState } from 'react';
+
+export default function GrievancesPage() {
+  const [category, setCategory] = useState('');
+  const [parcelId, setParcelId] = useState('');
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b border-[var(--color-outline-variant)] pb-4">
+        <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">Feature 11 • Revenue Court Grievances</div>
+        <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Raise Objection & Grievances</h1>
+        <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
+          Submit formal objections regarding land acquisition processes, valuation disputes, or boundary anomalies directly to Tehsildar Revenue Court portal.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: New Grievance Form */}
+        <div className="lg:col-span-5 gov-card p-6 space-y-4">
+          <div className="border-b border-[var(--color-outline-variant)] pb-3 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[var(--color-gov-navy)]">edit_note</span>
+            <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)]">New Grievance Form</h3>
+          </div>
+
+          <div className="space-y-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-bold text-[var(--color-on-surface)]">Grievance Category *</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full border border-[var(--color-outline-variant)] p-3 bg-white focus:border-[var(--color-gov-navy)] focus:outline-none"
+              >
+                <option value="">Select a category</option>
+                <option value="Valuation Dispute">Valuation Dispute (Section 26)</option>
+                <option value="Boundary / Demarcation">Boundary / Demarcation Conflict</option>
+                <option value="Compensation Delay">Compensation Delay / DBT issue</option>
+                <option value="Ownership / Title">Ownership / Joint Title Dispute</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[var(--color-on-surface)]">Related Parcel ID / Case Number *</label>
+              <input
+                type="text"
+                placeholder="e.g., IN-MH-440001-A12B"
+                value={parcelId}
+                onChange={(e) => setParcelId(e.target.value)}
+                className="w-full border border-[var(--color-outline-variant)] p-3 bg-white focus:border-[var(--color-gov-navy)] focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[var(--color-on-surface)]">Subject</label>
+              <input
+                type="text"
+                placeholder="Brief summary of objection"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full border border-[var(--color-outline-variant)] p-3 bg-white focus:border-[var(--color-gov-navy)] focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-bold text-[var(--color-on-surface)]">Detailed Description *</label>
+              <textarea
+                rows={4}
+                placeholder="Provide factual details regarding your objection..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full border border-[var(--color-outline-variant)] p-3 bg-white focus:border-[var(--color-gov-navy)] focus:outline-none"
+              ></textarea>
+            </div>
+
+            {/* Drag & Drop Upload */}
+            <div className="p-4 border-2 border-dashed border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)] text-center cursor-pointer">
+              <span className="material-symbols-outlined text-[28px] text-[var(--color-gov-navy)]">cloud_upload</span>
+              <div className="font-bold text-[var(--color-gov-navy)] mt-1">Drag and drop files here, or browse</div>
+              <div className="text-[10px] text-[var(--color-on-surface-variant)]">PDF, JPG, PNG up to 10MB</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button className="py-3 bg-white border border-[var(--color-outline-variant)] text-[var(--color-gov-navy)] font-bold uppercase">
+                Save Draft
+              </button>
+              <button
+                onClick={() => setSubmitted(true)}
+                className={`py-3 text-white font-bold uppercase tracking-wider ${
+                  submitted ? 'bg-[var(--color-land-green)]' : 'bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)]'
+                }`}
+              >
+                {submitted ? 'SUBMITTED ✓' : 'SUBMIT FORMAL OBJECTION'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Grievance Tracking Table */}
+        <div className="lg:col-span-7 gov-card p-6 space-y-4">
+          <div className="border-b border-[var(--color-outline-variant)] pb-3 flex justify-between items-center">
+            <div>
+              <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)]">Grievance Tracking</h3>
+              <p className="text-xs text-[var(--color-on-surface-variant)]">Status of your submitted objections routed to Revenue Court</p>
+            </div>
+            <div className="flex gap-2">
+              <button className="p-1.5 border border-[var(--color-outline-variant)] bg-white text-xs"><span className="material-symbols-outlined text-[16px]">filter_list</span></button>
+              <button className="p-1.5 border border-[var(--color-outline-variant)] bg-white text-xs"><span className="material-symbols-outlined text-[16px]">download</span></button>
+            </div>
+          </div>
+
+          <div className="border border-[var(--color-outline-variant)]">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="gov-table-header">
+                  <th className="p-3">Tracking ID</th>
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Date Filed</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3">Latest Update</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-outline-variant)]">
+                {mockGrievances.map((g) => (
+                  <tr key={g.id} className="gov-table-row hover:bg-[var(--color-surface-container-low)]">
+                    <td className="p-3 font-mono font-bold text-[var(--color-gov-navy)]">{g.trackingId}</td>
+                    <td className="p-3 font-semibold">{g.category}</td>
+                    <td className="p-3 text-[var(--color-on-surface-variant)]">{g.dateFiled}</td>
+                    <td className="p-3"><StatusBadge status={g.status} variant={getStatusVariant(g.status)} /></td>
+                    <td className="p-3 text-[var(--color-on-surface-variant)] max-w-[200px] truncate">{g.latestUpdate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
