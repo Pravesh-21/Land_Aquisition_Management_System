@@ -175,6 +175,42 @@ export const CORRIDOR_BUFFER_POLYGON: [number, number][] = [
   [21.0745, 79.0095],
 ];
 
+// Alternate Eco-Bypass Alignment (Bypasses Forest Compartment 42-B)
+export const CORRIDOR_ECO_BYPASS_LINE: [number, number][] = [
+  [21.0760, 79.0080],
+  [21.0820, 79.0170],
+  [21.0940, 79.0350],
+  [21.1010, 79.0430],
+  [21.1090, 79.0510],
+  [21.1200, 79.0720],
+  [21.1280, 79.0900],
+];
+
+export const CORRIDOR_ECO_BYPASS_BUFFER: [number, number][] = [
+  [21.0775, 79.0065],
+  [21.0835, 79.0155],
+  [21.0955, 79.0335],
+  [21.1025, 79.0415],
+  [21.1105, 79.0495],
+  [21.1215, 79.0705],
+  [21.1295, 79.0885],
+  [21.1265, 79.0915],
+  [21.1185, 79.0735],
+  [21.1075, 79.0525],
+  [21.0995, 79.0445],
+  [21.0925, 79.0365],
+  [21.0805, 79.0185],
+  [21.0745, 79.0095],
+];
+
+// MoEFCC Forest Reserve Ecological Buffer Zone
+export const FOREST_RESERVE_ZONE: [number, number][] = [
+  [21.1020, 79.0480],
+  [21.1150, 79.0580],
+  [21.1110, 79.0680],
+  [21.0980, 79.0580],
+];
+
 interface CadastralMapProps {
   height?: string;
   selectedUlpin?: string;
@@ -210,28 +246,9 @@ export default function CadastralLeafletMap({
   );
 
   const isAuthority = role !== 'CITIZEN';
-  const [bboxMode, setBboxMode] = useState<boolean>(false);
-  const [activeBbox, setActiveBbox] = useState<[number, number][] | null>(null);
-
-  const BBOX_PRESETS: { [key: string]: [number, number][] } = {
-    'Hingna Sector': [
-      [21.0750, 79.0100],
-      [21.0900, 79.0100],
-      [21.0900, 79.0300],
-      [21.0750, 79.0300],
-    ],
-    'Interchange Zone': [
-      [21.0880, 79.0280],
-      [21.1020, 79.0280],
-      [21.1020, 79.0480],
-      [21.0880, 79.0480],
-    ],
-  };
-
-  const selectBboxPreset = (name: string) => {
-    setActiveBbox(BBOX_PRESETS[name]);
-    setBboxMode(true);
-  };
+  const [activeAlignmentRoute, setActiveAlignmentRoute] = useState<'primary' | 'eco-bypass'>('primary');
+  const [showForestZone, setShowForestZone] = useState<boolean>(true);
+  const [showDistanceCaliper, setShowDistanceCaliper] = useState<boolean>(false);
 
   const mapCenter: [number, number] = [21.1000, 79.0450];
   const zoomLevel = 12;
@@ -249,6 +266,7 @@ export default function CadastralLeafletMap({
             {/* Basemap Switcher */}
             <div className="flex bg-slate-100 p-0.5 rounded border border-slate-200 font-semibold">
               <button
+                type="button"
                 onClick={() => setActiveBaseLayer('osm')}
                 className={`px-2.5 py-1 rounded transition-colors ${
                   activeBaseLayer === 'osm' ? 'bg-[var(--color-gov-navy)] text-white' : 'text-slate-700 hover:bg-slate-200'
@@ -257,6 +275,7 @@ export default function CadastralLeafletMap({
                 OpenStreetMap
               </button>
               <button
+                type="button"
                 onClick={() => setActiveBaseLayer('satellite')}
                 className={`px-2.5 py-1 rounded transition-colors ${
                   activeBaseLayer === 'satellite' ? 'bg-[var(--color-gov-navy)] text-white' : 'text-slate-700 hover:bg-slate-200'
@@ -265,6 +284,7 @@ export default function CadastralLeafletMap({
                 Satellite ESRI
               </button>
               <button
+                type="button"
                 onClick={() => setActiveBaseLayer('topo')}
                 className={`px-2.5 py-1 rounded transition-colors ${
                   activeBaseLayer === 'topo' ? 'bg-[var(--color-gov-navy)] text-white' : 'text-slate-700 hover:bg-slate-200'
@@ -275,7 +295,7 @@ export default function CadastralLeafletMap({
             </div>
           </div>
 
-          {/* Layer Toggles & Authority Bounding Box Tool */}
+          {/* Layer Toggles & Authority Alignment Feasibility Switcher */}
           <div className="flex items-center gap-3 text-xs font-semibold text-slate-700">
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -284,7 +304,7 @@ export default function CadastralLeafletMap({
                 onChange={(e) => setShowBuffer(e.target.checked)}
                 className="rounded border-slate-300 text-[var(--color-gov-navy)] focus:ring-0 cursor-pointer"
               />
-              <span>60m RoW Corridor Buffer</span>
+              <span>60m RoW Buffer</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -293,51 +313,61 @@ export default function CadastralLeafletMap({
                 onChange={(e) => setShowAlignment(e.target.checked)}
                 className="rounded border-slate-300 text-[var(--color-gov-navy)] focus:ring-0 cursor-pointer"
               />
-              <span>Highway Centerline</span>
+              <span>Centerline</span>
             </label>
 
-            {/* Strict RBAC: Bounding Box Drawing Tool - Exclusive to Government Authorities */}
+            {/* Strict RBAC: Alternate Alignment Feasibility Tool - Exclusive to Authorities */}
             {isAuthority && (
-              <div className="flex items-center gap-1.5 pl-2 border-l border-slate-300">
+              <div className="flex items-center gap-2 pl-3 border-l border-slate-300">
+                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-300">
+                  <button
+                    type="button"
+                    onClick={() => setActiveAlignmentRoute('primary')}
+                    className={`px-2.5 py-1 rounded font-bold text-[11px] transition-all ${
+                      activeAlignmentRoute === 'primary'
+                        ? 'bg-[var(--color-gov-navy)] text-white shadow-xs'
+                        : 'text-slate-700 hover:bg-slate-200'
+                    }`}
+                    title="Primary Gazette Notified Route (12.4 km)"
+                  >
+                    🛣️ Primary Route
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveAlignmentRoute('eco-bypass')}
+                    className={`px-2.5 py-1 rounded font-bold text-[11px] transition-all ${
+                      activeAlignmentRoute === 'eco-bypass'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'text-slate-700 hover:bg-slate-200'
+                    }`}
+                    title="Feasibility Option: Eco-Bypass Route avoiding Forest Reserve (13.8 km)"
+                  >
+                    🌲 Eco-Bypass Route
+                  </button>
+                </div>
+
+                <label className="flex items-center gap-1 cursor-pointer text-emerald-800 font-bold text-[11px]" title="Toggle MoEFCC Forest Reserve Compartment 42-B">
+                  <input
+                    type="checkbox"
+                    checked={showForestZone}
+                    onChange={(e) => setShowForestZone(e.target.checked)}
+                    className="rounded border-slate-300 text-emerald-700 focus:ring-0 cursor-pointer"
+                  />
+                  <span>Forest Zone</span>
+                </label>
+
                 <button
                   type="button"
-                  onClick={() => {
-                    if (bboxMode) {
-                      setBboxMode(false);
-                      setActiveBbox(null);
-                    } else {
-                      selectBboxPreset('Hingna Sector');
-                    }
-                  }}
-                  className={`px-2.5 py-1 rounded flex items-center gap-1 font-bold transition-all shadow-xs ${
-                    bboxMode
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-blue-50 text-[#0072BC] hover:bg-blue-100 border border-blue-200'
+                  onClick={() => setShowDistanceCaliper(!showDistanceCaliper)}
+                  className={`px-2 py-1 rounded text-[11px] font-bold border transition-colors ${
+                    showDistanceCaliper
+                      ? 'bg-blue-600 text-white border-blue-700'
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                   }`}
-                  title="Authority Tool: Draw square/rectangle bounding box to inspect enclosed cadastral parcels"
+                  title="Toggle Perpendicular Distance Caliper Measurement"
                 >
-                  <span className="material-symbols-outlined text-[15px]">crop_square</span>
-                  <span>{bboxMode ? 'Clear Bounding Box' : 'Bounding Box Tool (AOI)'}</span>
+                  📏 Caliper {showDistanceCaliper ? 'ON' : 'OFF'}
                 </button>
-
-                {bboxMode && (
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => selectBboxPreset('Hingna Sector')}
-                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px]"
-                    >
-                      Sector 1
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectBboxPreset('Interchange Zone')}
-                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px]"
-                    >
-                      Sector 2
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -374,13 +404,13 @@ export default function CadastralLeafletMap({
             />
           )}
 
-          {/* 60m RoW Acquisition Buffer Polygon */}
+          {/* Dynamic RoW Corridor Buffer Polygon (Primary or Eco-Bypass) */}
           {showBuffer && (
             <Polygon
-              positions={CORRIDOR_BUFFER_POLYGON}
+              positions={activeAlignmentRoute === 'eco-bypass' ? CORRIDOR_ECO_BYPASS_BUFFER : CORRIDOR_BUFFER_POLYGON}
               pathOptions={{
-                color: '#FE932C',
-                fillColor: '#FE932C',
+                color: activeAlignmentRoute === 'eco-bypass' ? '#059669' : '#FE932C',
+                fillColor: activeAlignmentRoute === 'eco-bypass' ? '#10B981' : '#FE932C',
                 fillOpacity: 0.2,
                 weight: 2,
                 dashArray: '5, 5',
@@ -389,18 +419,22 @@ export default function CadastralLeafletMap({
               <Tooltip sticky>
                 <div className="p-1 text-xs font-bold space-y-0.5">
                   <div className="text-[#1B365D]">🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
-                  <div className="text-amber-800 font-normal">Right-of-Way (RoW) 60m Corridor Buffer</div>
+                  <div className="text-amber-800 font-normal">
+                    {activeAlignmentRoute === 'eco-bypass'
+                      ? '🌲 Feasibility Option: Eco-Bypass 60m Corridor Buffer (Forest Avoidance)'
+                      : 'Right-of-Way (RoW) 60m Corridor Buffer'}
+                  </div>
                 </div>
               </Tooltip>
             </Polygon>
           )}
 
-          {/* Alignment Centerline */}
+          {/* Dynamic Alignment Centerline */}
           {showAlignment && (
             <Polyline
-              positions={CORRIDOR_ALIGNMENT_LINE}
+              positions={activeAlignmentRoute === 'eco-bypass' ? CORRIDOR_ECO_BYPASS_LINE : CORRIDOR_ALIGNMENT_LINE}
               pathOptions={{
-                color: '#D97706',
+                color: activeAlignmentRoute === 'eco-bypass' ? '#047857' : '#D97706',
                 weight: 4,
                 opacity: 0.9,
               }}
@@ -408,31 +442,66 @@ export default function CadastralLeafletMap({
               <Tooltip sticky>
                 <div className="p-1 text-xs font-bold space-y-0.5">
                   <div className="text-[#1B365D]">🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
-                  <div className="text-slate-600 font-normal">Highway Centerline Trajectory</div>
+                  <div className="text-slate-600 font-normal">
+                    {activeAlignmentRoute === 'eco-bypass'
+                      ? '🌿 Eco-Bypass Centerline (13.8 km)'
+                      : 'Highway Centerline Trajectory (12.4 km)'}
+                  </div>
                 </div>
               </Tooltip>
             </Polyline>
           )}
 
-          {/* Authority Bounding Box Rectangle Layer (AOI) */}
-          {isAuthority && bboxMode && activeBbox && (
+          {/* MoEFCC Forest Reserve Ecological Zone (Authority Only) */}
+          {isAuthority && showForestZone && (
             <Polygon
-              positions={activeBbox}
+              positions={FOREST_RESERVE_ZONE}
               pathOptions={{
-                color: '#2563EB',
-                fillColor: '#3B82F6',
-                fillOpacity: 0.25,
-                weight: 3,
-                dashArray: '6, 6',
+                color: '#065F46',
+                fillColor: '#10B981',
+                fillOpacity: 0.28,
+                weight: 2.5,
+                dashArray: '4, 4',
               }}
             >
-              <Tooltip permanent sticky>
-                <div className="p-1.5 text-xs font-bold space-y-0.5 bg-blue-900 text-white rounded">
-                  <div>📐 Authority Bounding Box (AOI)</div>
-                  <div className="text-[10px] font-normal text-blue-200">Enclosed Area: 8.42 Ha • Intersected Parcels: 2</div>
+              <Tooltip sticky>
+                <div className="p-1.5 text-xs font-bold space-y-0.5 bg-emerald-950 text-white rounded">
+                  <div className="flex items-center gap-1">
+                    <span>🌲 MoEFCC Forest Reserve (Compartment 42-B)</span>
+                  </div>
+                  <div className="text-[10px] font-normal text-emerald-200">
+                    Eco-Sensitive Buffer • 1,250 Trees • Wildlife Migration Path
+                  </div>
+                  {activeAlignmentRoute === 'primary' ? (
+                    <div className="text-[10px] text-amber-300 font-bold">⚠️ Primary Route Intersects Compartment</div>
+                  ) : (
+                    <div className="text-[10px] text-emerald-300 font-bold">✓ Eco-Bypass Clears Reserve Boundary</div>
+                  )}
                 </div>
               </Tooltip>
             </Polygon>
+          )}
+
+          {/* Interactive Distance Caliper Measurement Tool (Authority Only) */}
+          {isAuthority && showDistanceCaliper && (
+            <Polyline
+              positions={[
+                [21.0820, 79.0170],
+                [21.0865, 79.0195],
+              ]}
+              pathOptions={{
+                color: '#2563EB',
+                weight: 3,
+                dashArray: '4, 4',
+              }}
+            >
+              <Tooltip permanent sticky>
+                <div className="p-1 text-xs font-bold bg-blue-900 text-white rounded shadow-md">
+                  <div>📏 Distance Caliper: 42.5m</div>
+                  <div className="text-[10px] font-normal text-blue-200">Centerline to Plot #442/1-A Boundary</div>
+                </div>
+              </Tooltip>
+            </Polyline>
           )}
 
           {/* Standalone Separate Land Acquisition Polygons */}
