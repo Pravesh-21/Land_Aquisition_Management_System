@@ -178,14 +178,22 @@ export interface CompensationBreakdown {
 export interface Beneficiary {
   id: string;
   name: string;
+  category?: string;
   aadhaar: string;
   accountNumber: string;
   bankName: string;
+  ifsc?: string;
   village: string;
   surveyNumber: string;
   kycStatus: 'Verified' | 'Pending' | 'Failed';
+  baseLandValue?: number;
+  solatiumAmount?: number;
+  assetAmount?: number;
+  rrGrant?: number;
+  familyMembers?: number;
   disbursementAmount: number;
-  disbursementStatus: 'Pending' | 'Processing' | 'Completed' | 'Failed';
+  disbursementStatus: 'Pending' | 'Processing' | 'Completed' | 'Failed' | 'Sanctioned' | 'Disbursed';
+  panchnamaStatus?: string;
 }
 
 // --- Grievance ---

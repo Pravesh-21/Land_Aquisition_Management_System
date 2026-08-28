@@ -1115,15 +1115,7 @@ export default function GenericModulePage() {
               ),
             },
           ],
-          data: [
-            { id: 'PAF-MH-84920', name: 'Sh. Rajendra Patel', category: 'Title-Holder Landowner (100% Share)', aadhaar: 'XXXX XXXX 4920', accountNumber: '*4920', bankName: 'SBI Hingna Branch', village: 'Hingna, Nagpur', surveyNumber: '442/1-A', kycStatus: 'Verified', disbursementAmount: 4738500, disbursementStatus: 'Sanctioned' },
-            { id: 'PAF-MH-84921', name: 'Sh. Rameshwar Lal', category: 'Title-Holder (Joint Co-owner)', aadhaar: 'XXXX XXXX 8112', accountNumber: '*8112', bankName: 'PNB Nagpur Central', village: 'Ramgarh', surveyNumber: '142/3', kycStatus: 'Verified', disbursementAmount: 2000000, disbursementStatus: 'Processing' },
-            { id: 'PAF-MH-84922', name: 'Smt. Sunita Devi', category: 'Agricultural Tenant Farmer', aadhaar: 'XXXX XXXX 3301', accountNumber: '*3301', bankName: 'BOI Kondagaon', village: 'Kondagaon', surveyNumber: '46', kycStatus: 'Verified', disbursementAmount: 825000, disbursementStatus: 'Disbursed' },
-            { id: 'PAF-MH-84923', name: 'Sh. Vikram Singh', category: 'Landless Agricultural Laborer', aadhaar: 'XXXX XXXX 9901', accountNumber: '*9901', bankName: 'HDFC Wanadongri', village: 'Wanadongri', surveyNumber: '445/1', kycStatus: 'Pending', disbursementAmount: 510000, disbursementStatus: 'Pending Verification' },
-            { id: 'PAF-MH-84924', name: 'M/s Sharma Enterprises', category: 'Commercial Plot Owner', aadhaar: 'XXXX XXXX 5567', accountNumber: '*5567', bankName: 'SBI Butibori', village: 'Butibori', surveyNumber: '450/2-A', kycStatus: 'Verified', disbursementAmount: 9800000, disbursementStatus: 'Sanctioned' },
-            { id: 'PAF-MH-84925', name: 'Sh. Suresh Patil', category: 'Title-Holder Landowner', aadhaar: 'XXXX XXXX 7789', accountNumber: '*7789', bankName: 'Bank of Maharashtra', village: 'Karanja', surveyNumber: '448/3', kycStatus: 'Verified', disbursementAmount: 7400000, disbursementStatus: 'Processing' },
-            { id: 'PAF-MH-84926', name: 'Smt. Geeta Devi & Co-heirs', category: 'Legal Successor Beneficiary', aadhaar: 'XXXX XXXX 2244', accountNumber: '*2244', bankName: 'UCO Bank', village: 'Ramgarh', surveyNumber: '142/3-B', kycStatus: 'Verified', disbursementAmount: 1800000, disbursementStatus: 'Processing' },
-          ],
+          data: mockBeneficiaries,
         };
 
       // ==========================================
