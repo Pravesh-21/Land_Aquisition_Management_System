@@ -6,7 +6,7 @@ import { useRole } from '../../../../contexts/RoleContext';
 import DataGrid from '../../../../components/ui/DataGrid';
 import KPICard from '../../../../components/ui/KPICard';
 import StatusBadge, { getStatusVariant } from '../../../../components/ui/StatusBadge';
-import { mockParcels, mockBeneficiaries, mockGrievances, mockForestClearances, formatINR } from '../../../../data/mockData';
+import { mockParcels, mockBeneficiaries, mockGrievances, mockForestClearances, mockProjects, formatINR } from '../../../../data/mockData';
 import Link from 'next/link';
 
 interface SubpageConfig {
@@ -646,6 +646,394 @@ export default function GenericModulePage() {
         };
 
       // ==========================================
+      // District Collector Subfeatures (14 Modules)
+      // ==========================================
+      case 'proposal-review':
+        return {
+          title: 'Acquisition Proposal Review & Executive Decision',
+          category: 'District Collector & Competent Authority',
+          description: 'Review statutory land acquisition proposals submitted by Requisite Agencies (NHAI, Railways, State PWD). Scrutinize Social Impact Assessment (SIA) approvals, Section 4 notifications, and land schedules.',
+          kpis: [
+            { label: 'Active Proposals', value: '6', subtitle: 'District Nagpur', color: 'navy', icon: 'rate_review' },
+            { label: 'Recommended for Sec 11', value: '2', subtitle: 'SIA Cleared', color: 'green', icon: 'check_circle' },
+            { label: 'Returned with Queries', value: '1', subtitle: 'Boundary Alignment Issue', color: 'ochre', icon: 'replay' },
+            { label: 'Total Estimated Outlay', value: '₹ 184.2 Cr', subtitle: 'District Budget', color: 'tertiary', icon: 'payments' },
+          ],
+          columns: [
+            { key: 'id', label: 'Proposal Ref', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'name', label: 'Project Name', render: (v: string) => <span className="font-semibold">{v}</span> },
+            { key: 'agency', label: 'Requisite Agency' },
+            { key: 'totalArea', label: 'Required Area (Ha)', align: 'right' as const },
+            { key: 'estimatedCost', label: 'Est. Outlay (₹)', align: 'right' as const, render: (v: number) => formatINR(v) },
+            { key: 'siaStatus', label: 'SIA Expert Clearance', render: () => <StatusBadge status="SIA Approved" variant="success" icon="verified" /> },
+            { key: 'status', label: 'Approval Stage', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-proposal-review' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Review & Decide
+                </button>
+              ),
+            },
+          ],
+          data: mockProjects,
+        };
+
+      case 'objection-oversight':
+        return {
+          title: 'Statutory Section 15 Objection & Hearing Oversight',
+          category: 'District Collector & Revenue Administration',
+          description: 'Supervise inquiry proceedings conducted by Land Acquisition Officers and Revenue Magistrates under Section 15(2) of the Act. Monitor statutory 60-day objection timelines and hear aggrieved landholders.',
+          kpis: [
+            { label: 'Total Objections Filed', value: '34 Cases', subtitle: 'Section 15(1) Petitions', color: 'navy', icon: 'gavel' },
+            { label: 'Inquiries Completed', value: '28 Cases', subtitle: 'LAO Reports Received', color: 'green', icon: 'task_alt' },
+            { label: 'Collector Directions Issued', value: '6 Orders', subtitle: 'Revision Directed', color: 'ochre', icon: 'description' },
+            { label: 'Statutory Compliance', value: '94.2%', subtitle: 'Within 60 Days', color: 'tertiary', icon: 'verified' },
+          ],
+          columns: [
+            { key: 'trackingId', label: 'Docket No.', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'parcelId', label: 'Survey Plot' },
+            { key: 'filedBy', label: 'Objector Name' },
+            { key: 'category', label: 'Objection Category', render: (v: string) => <StatusBadge status={v} variant="warning" /> },
+            { key: 'dateFiled', label: 'Date Filed' },
+            { key: 'status', label: 'Inquiry Status', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-objection-direction' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Issue Directive
+                </button>
+              ),
+            },
+          ],
+          data: mockGrievances,
+        };
+
+      case 'inter-dept':
+        return {
+          title: 'Inter-Departmental Statutory Clearance Coordination Matrix',
+          category: 'District Collector & Executive Oversight',
+          description: 'Single-window inter-agency tracking between Revenue, Forest & Environment (MoEFCC), State PWD, Irrigation Department, and District Land Records (DILRMP).',
+          kpis: [
+            { label: 'Clearances Tracked', value: '14 Projects', subtitle: 'Single Window Gateway', color: 'navy', icon: 'hub' },
+            { label: 'Stage II Forest Clearance', value: '1 Pending', subtitle: 'MoEFCC Western Region', color: 'ochre', icon: 'forest' },
+            { label: 'RoR Mutation Sync', value: '98.2%', subtitle: 'State Revenue Code', color: 'green', icon: 'sync' },
+            { label: 'Avg Clearance SLA', value: '28 Days', subtitle: 'Target: 45 Days', color: 'tertiary', icon: 'schedule' },
+          ],
+          columns: [
+            { key: 'dept', label: 'Concerned Department', render: (v: string) => <span className="font-bold text-slate-900">{v}</span> },
+            { key: 'clearanceType', label: 'Required Clearance / NOC' },
+            { key: 'project', label: 'Linked Corridor Project' },
+            { key: 'slaDue', label: 'Statutory SLA Due Date' },
+            { key: 'status', label: 'Department Status', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-inter-dept' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Summon / Expedite
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'ID1', dept: 'MoEFCC - Western Region (Forest)', clearanceType: 'Stage II Forest Diversion (14.2 Ha)', project: 'NH-44 Corridor Phase II', slaDue: '15-Nov-2024', status: 'Under Review' },
+            { id: 'ID2', dept: 'State PWD - Roads Division', clearanceType: 'Right-of-Way Road Cut Permission', project: 'NH-44 Corridor Phase II', slaDue: '20-Oct-2024', status: 'Approved' },
+            { id: 'ID3', dept: 'Water Resources / Irrigation Dept', clearanceType: 'Canal Crossing Canal Syphon NOC', project: 'Nagpur Ring Road West', slaDue: '30-Nov-2024', status: 'Pending Review' },
+            { id: 'ID4', dept: 'DILRMP / Inspector of Land Records', clearanceType: 'Digital Cadastral RoR Integration', project: 'Industrial Park Corridor', slaDue: '10-Oct-2024', status: 'Approved' },
+          ],
+        };
+
+      case 'compensation-monitoring':
+        return {
+          title: 'District Compensation & Statutory Award Monitoring Schedule',
+          category: 'District Collector & Award Sanction Authority',
+          description: 'Monitor district-wide compensation determination under Section 26 to 30 of RFCTLARR Act (2013). Track 100% statutory solatium, 12% additional market value interest, and standing asset values.',
+          kpis: [
+            { label: 'Total Assessed Award', value: '₹ 184.2 Cr', subtitle: 'Section 26 Valuation', color: 'navy', icon: 'payments' },
+            { label: 'Collector Sanctioned', value: '₹ 142.8 Cr', subtitle: 'Gazette Sealed', color: 'green', icon: 'verified' },
+            { label: 'PFMS DBT Disbursed', value: '₹ 128.4 Cr', subtitle: 'Direct Beneficiary Credit', color: 'tertiary', icon: 'account_balance' },
+            { label: 'Pending Disbursal', value: '₹ 14.4 Cr', subtitle: 'Awaiting Bank e-KYC', color: 'ochre', icon: 'pending' },
+          ],
+          columns: [
+            { key: 'parcelId', label: 'Parcel ULPIN', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'village', label: 'Village & Tehsil' },
+            { key: 'owner', label: 'Landowner (PAF)' },
+            { key: 'baseValue', label: 'Base Value (₹)', align: 'right' as const, render: (v: number) => formatINR(v) },
+            { key: 'solatium', label: '100% Solatium (₹)', align: 'right' as const, render: (v: number) => formatINR(v) },
+            { key: 'totalAward', label: 'Total Award (₹)', align: 'right' as const, render: (v: number) => <span className="font-bold text-emerald-800">{formatINR(v)}</span> },
+            { key: 'status', label: 'Sanction Status', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-compensation-sanction' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Sanction Award
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { parcelId: 'IN-MH-440001-A12B', village: 'Hingna, Nagpur', owner: 'Sh. Rajendra Patel', baseValue: 2000000, solatium: 2000000, totalAward: 4738500, status: 'Sanctioned' },
+            { parcelId: 'IN-MH-440001-B04K', village: 'Wanadongri, Nagpur', owner: 'Sh. Suresh Patel', baseValue: 3600000, solatium: 3600000, totalAward: 7400000, status: 'Approved' },
+            { parcelId: 'IN-MH-440001-C09L', village: 'Kondagaon, Nagpur', owner: 'Sh. Rameshwar Lal', baseValue: 1800000, solatium: 1800000, totalAward: 4250000, status: 'Under Review' },
+            { parcelId: 'IN-MH-440001-D15M', village: 'Butibori, Nagpur', owner: 'M/s Sharma Enterprises', baseValue: 4500000, solatium: 4500000, totalAward: 9800000, status: 'Sanctioned' },
+          ],
+        };
+
+      case 'possession-rr':
+        return {
+          title: 'Section 38 Physical Possession & R&R Entitlement Oversight',
+          category: 'District Collector & R&R Administrator',
+          description: 'Supervise physical possession certificates (Panchnama) after 100% compensation transfer. Track Rehabilitation & Resettlement (R&R) Schedule II infrastructure benefits for Project Displaced Families (PDF).',
+          kpis: [
+            { label: 'Possession Handed', value: '112.4 Ha', subtitle: 'Free of Encumbrances', color: 'green', icon: 'home_work' },
+            { label: 'Affected Families', value: '1,452 PAF', subtitle: 'Survey Verified', color: 'navy', icon: 'groups' },
+            { label: 'Displaced Families', value: '184 PDF', subtitle: 'Resettlement Colony Assigned', color: 'tertiary', icon: 'cottage' },
+            { label: 'R&R Infrastructure', value: '92% Done', subtitle: 'Roads, Water & Power', color: 'ochre', icon: 'construction' },
+          ],
+          columns: [
+            { key: 'sector', label: 'Corridor Sector', render: (v: string) => <span className="font-bold text-slate-900">{v}</span> },
+            { key: 'area', label: 'Acquired Extent (Ha)', align: 'right' as const },
+            { key: 'panchnama', label: 'Possession Panchnama', render: (v: string) => <StatusBadge status={v} variant={v === 'Completed' ? 'success' : 'warning'} /> },
+            { key: 'paf', label: 'Affected Families (PAF)' },
+            { key: 'rrStatus', label: 'R&R Grant Disbursement', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-possession' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Verify Panchnama
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'RR1', sector: 'Sector A: Hingna - Wanadongri Bypass', area: '45.2 Ha', panchnama: 'Completed', paf: '412 PAF (48 PDF)', rrStatus: 'Disbursed' },
+            { id: 'RR2', sector: 'Sector B: Karanja Forest Alignment', area: '38.6 Ha', panchnama: 'Under Joint Survey', paf: '298 PAF (12 PDF)', rrStatus: 'Approved' },
+            { id: 'RR3', sector: 'Sector C: Butibori Industrial Interchange', area: '28.6 Ha', panchnama: 'Completed', paf: '742 PAF (124 PDF)', rrStatus: 'Processing' },
+          ],
+        };
+
+      case 'delay-exceptions':
+        return {
+          title: 'Statutory Timeline Delay & Exception Intervention Engine',
+          category: 'District Collector & Appellate Authority',
+          description: 'Automated exception monitoring flagging Section 11 expiration risks (12-month limit under Section 25), PFMS DBT bank rejection failures, and delayed joint survey discrepancies.',
+          kpis: [
+            { label: 'Critical Exceptions', value: '4 Cases', subtitle: 'Immediate Collector Review', color: 'red', icon: 'warning' },
+            { label: 'Section 25 Lapse Warning', value: '1 Case', subtitle: 'Approaching 12-Month Limit', color: 'ochre', icon: 'timer' },
+            { label: 'PFMS Bank Rejections', value: '2 Transactions', subtitle: 'Aadhaar Name Mismatch', color: 'navy', icon: 'error' },
+            { label: 'Court Injunction Stays', value: '1 Docket', subtitle: 'High Court Interim Stay', color: 'tertiary', icon: 'gavel' },
+          ],
+          columns: [
+            { key: 'id', label: 'Exception ID', render: (v: string) => <span className="font-mono font-bold text-red-700">{v}</span> },
+            { key: 'project', label: 'Project / Survey Plot' },
+            { key: 'category', label: 'Exception Category', render: (v: string) => <span className="font-bold text-slate-900">{v}</span> },
+            { key: 'rootCause', label: 'Root Cause / Delay Factor' },
+            { key: 'overdueDays', label: 'Overdue (Days)', align: 'center' as const, render: (v: number) => <span className="font-bold text-red-600">{v} Days</span> },
+            { key: 'severity', label: 'Severity', render: (v: string) => <StatusBadge status={v} variant="error" /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-exception-intervene' })}
+                  className="px-3 py-1 bg-red-700 hover:bg-red-800 text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Intervene
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'EX-2024-001', project: 'NH-44 Phase II (Plot #445/1)', category: 'Section 25 Timeline Expiry Risk', rootCause: 'Section 11 issued 10 months ago; Section 19 declaration pending final joint survey.', overdueDays: 45, severity: 'Critical' },
+            { id: 'EX-2024-002', project: 'Nagpur Ring Road (Plot #142/3)', category: 'PFMS DBT Rejection', rootCause: 'Beneficiary bank account IFSC code mismatch during electronic treasury credit.', overdueDays: 14, severity: 'High' },
+            { id: 'EX-2024-003', project: 'Karanja Forest Corridor', category: 'Inter-Agency Boundary Contest', rootCause: 'Discrepancy of 0.8 Ha between Forest Boundary Pillar 42 and Revenue RoR map.', overdueDays: 28, severity: 'High' },
+            { id: 'EX-2024-004', project: 'Butibori Industrial Hub', category: 'High Court Injunction Stay', rootCause: 'Writ petition filed regarding solatium distribution among co-parceners.', overdueDays: 60, severity: 'Critical' },
+          ],
+        };
+
+      case 'escalations':
+        return {
+          title: 'District Escalation Matrix & High-Level Resolution Register',
+          category: 'District Collector & Appellate Authority',
+          description: 'Formal escalation queue for cases referred directly from Land Acquisition Officers, Divisional Forest Officers, or Requiring Agencies requiring IAS Collector intervention.',
+          kpis: [
+            { label: 'Escalated Matters', value: '5 Cases', subtitle: 'Referred to Collector', color: 'red', icon: 'priority_high' },
+            { label: 'Collector Hearings', value: '3 Listed', subtitle: 'This Week', color: 'navy', icon: 'gavel' },
+            { label: 'Decrees Enforced', value: '12 Orders', subtitle: 'Past 6 Months', color: 'green', icon: 'verified' },
+            { label: 'Avg Resolution Time', value: '4.8 Days', subtitle: 'Fast-Track Track', color: 'tertiary', icon: 'speed' },
+          ],
+          columns: [
+            { key: 'id', label: 'Escalation ID', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'referredBy', label: 'Referring Officer' },
+            { key: 'subject', label: 'Subject Matter / Contest' },
+            { key: 'date', label: 'Date Escalated' },
+            { key: 'urgency', label: 'Urgency', render: (v: string) => <StatusBadge status={v} variant={v === 'High Priority' ? 'error' : 'warning'} /> },
+            { key: 'status', label: 'Escalation Status', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'collector-escalation-decree' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Pass Decree
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'ESC-2024-101', referredBy: 'SDO / LAO Nagpur', subject: 'Gram Sabha Resolution Dispute on Common Village Land (Plot #450/2-A)', date: '22-Oct-2024', urgency: 'High Priority', status: 'Pending Hearing' },
+            { id: 'ESC-2024-102', referredBy: 'DFO MoEFCC Western Region', subject: 'Wildlife Corridor Buffer Realignment for Sector 3', date: '25-Oct-2024', urgency: 'High Priority', status: 'Under Review' },
+            { id: 'ESC-2024-103', referredBy: 'Project Director NHAI', subject: 'Request for Police Demarcation Protection during Boundary Pillar Fixing', date: '27-Oct-2024', urgency: 'Urgent', status: 'Action Directed' },
+          ],
+        };
+
+      case 'mis-reports':
+        return {
+          title: 'District Land Acquisition MIS & Statutory Reporting Centre',
+          category: 'District Collector & Executive MIS',
+          description: 'Generate and export authorized MIS analytical summaries, Section 11/19 Gazette audit registers, and Ministry of Rural Development quarterly compliance returns.',
+          kpis: [
+            { label: 'MIS Reports Ready', value: '24 Reports', subtitle: 'Automated Generation', color: 'navy', icon: 'analytics' },
+            { label: 'Total Acquired Extent', value: '342.8 Ha', subtitle: 'District Nagpur', color: 'green', icon: 'landscape' },
+            { label: 'Total Fund Audited', value: '₹ 184.2 Cr', subtitle: 'CAG & State Treasury', color: 'tertiary', icon: 'account_balance' },
+            { label: 'Audit Status', value: 'Fully Compliant', subtitle: 'Zero Audit Paras', color: 'navy', icon: 'verified' },
+          ],
+          columns: [
+            { key: 'title', label: 'Report Title', render: (v: string) => <span className="font-bold text-slate-900">{v}</span> },
+            { key: 'actRef', label: 'Statutory Act Reference' },
+            { key: 'cycle', label: 'Reporting Cycle' },
+            { key: 'lastGenerated', label: 'Last Generated' },
+            { key: 'format', label: 'Format' },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => {
+                    const docContent = `GOVERNMENT OF INDIA • DISTRICT COLLECTORATE NAGPUR\nMIS REPORT: ${r.title}\nACT REF: ${r.actRef}\nGENERATED: ${new Date().toLocaleString('en-IN')}\nSTATUS: DIGITALLY CERTIFIED BY DISTRICT COLLECTOR`;
+                    const blob = new Blob([docContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${r.title.replace(/\s+/g, '_')}_MIS.txt`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    setActionSuccess(`Report "${r.title}" exported successfully.`);
+                  }}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Download Report
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'REP1', title: 'District Land Acquisition Monthly Progress Return (MPR)', actRef: 'Section 11 & Section 19 MIS', cycle: 'Monthly (Oct 2024)', lastGenerated: '28-Oct-2024', format: 'PDF / XLSX' },
+            { id: 'REP2', title: 'Section 23 Statutory Compensation & Solatium Disbursement Register', actRef: 'Section 26-30 Audit Schedule', cycle: 'Quarterly', lastGenerated: '24-Oct-2024', format: 'PDF / CSV' },
+            { id: 'REP3', title: 'Section 38 Physical Possession & Panchnama Handover Docket', actRef: 'Section 38 RoR Transfer', cycle: 'Fortnightly', lastGenerated: '26-Oct-2024', format: 'PDF / XLSX' },
+            { id: 'REP4', title: 'Rehabilitation & Resettlement (R&R) Schedule II Entitlement Compliance', actRef: 'RFCTLARR Schedule II', cycle: 'Monthly', lastGenerated: '20-Oct-2024', format: 'PDF / XLSX' },
+          ],
+        };
+
+      case 'audit-trail':
+        return {
+          title: 'Executive Audit Trail & Digital Transaction Log',
+          category: 'District Administration Security & Compliance',
+          description: 'Immutable digital ledger recording every e-Signature, award approval, boundary alteration, and fund sanction across all district revenue officers with cryptographic DSC verification.',
+          kpis: [
+            { label: 'Total Audit Events', value: '1,842', subtitle: 'Immutable Ledger', color: 'navy', icon: 'history' },
+            { label: 'e-Sign Transactions', value: '124 DSC', subtitle: '256-Bit SHA Verified', color: 'green', icon: 'verified' },
+            { label: 'Boundary Modifications', value: '18 Logged', subtitle: 'GIS Versioned', color: 'ochre', icon: 'layers' },
+            { label: 'Cryptographic Match', value: '100%', subtitle: 'Zero Tampering', color: 'tertiary', icon: 'lock' },
+          ],
+          columns: [
+            { key: 'logId', label: 'Log ID', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'timestamp', label: 'Timestamp' },
+            { key: 'officer', label: 'Officer & Designation' },
+            { key: 'actionType', label: 'Action Type', render: (v: string) => <span className="font-semibold text-slate-900">{v}</span> },
+            { key: 'entity', label: 'Entity Modified / Sanctioned' },
+            { key: 'dscHash', label: 'DSC Hash (Masked)', render: (v: string) => <span className="font-mono text-[11px] text-slate-500">{v}</span> },
+            { key: 'status', label: 'Status', render: () => <StatusBadge status="Verified" variant="success" icon="check_circle" /> },
+          ],
+          data: [
+            { logId: 'AUD-98421', timestamp: '28-Oct-2024 14:32:18', officer: 'Sh. Ramesh Kumar, IAS (Collector)', actionType: 'Section 11 Gazette e-Sign', entity: 'NH-44 Phase II Alignment', dscHash: 'SHA256:9f83...a12c' },
+            { logId: 'AUD-98420', timestamp: '28-Oct-2024 11:15:04', officer: 'Smt. Meera Kulkarni (LAO)', actionType: 'Section 15 Ground Audit Verification', entity: 'Plot #442/1-A (Hingna)', dscHash: 'SHA256:4d72...89ee' },
+            { logId: 'AUD-98419', timestamp: '27-Oct-2024 16:45:22', officer: 'Shri Vikram Singh (Tehsildar)', actionType: 'Summons Issued in Dispute Docket', entity: 'Case DISP-MH-2023-8842', dscHash: 'SHA256:1a84...33cc' },
+            { logId: 'AUD-98418', timestamp: '26-Oct-2024 09:20:10', officer: 'Dr. Anil Sharma (DFO Forest)', actionType: 'Stage I Forest NOC Clearance', entity: 'Compartment 42-B (14.2 Ha)', dscHash: 'SHA256:88ee...55ff' },
+          ],
+        };
+
+      case 'notifications':
+        return {
+          title: 'District Collector Statutory Alerts & Executive Notification Hub',
+          category: 'District Administration Alert Gateway',
+          description: 'High-priority statutory alerts, automated milestone escalation reminders, and pending Section 11/19 Gazette signatures requiring District Collector attention.',
+          kpis: [
+            { label: 'Unread Alerts', value: '3 Priority', subtitle: 'Action Required', color: 'red', icon: 'notifications_active' },
+            { label: 'Deadlines Approaching', value: '2 Statutory', subtitle: 'Next 7 Days', color: 'ochre', icon: 'timer' },
+            { label: 'DBT Batches Ready', value: '1 Queue', subtitle: '₹ 45.2 Cr Sanction', color: 'green', icon: 'payments' },
+            { label: 'Gateway State', value: 'Active', subtitle: 'PFMS & DILRMP Sync', color: 'tertiary', icon: 'sensors' },
+          ],
+          columns: [
+            { key: 'alertId', label: 'Alert ID', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'severity', label: 'Severity', render: (v: string) => <StatusBadge status={v} variant={v === 'High' ? 'error' : 'warning'} /> },
+            { key: 'title', label: 'Alert Subject', render: (v: string) => <span className="font-bold text-slate-900">{v}</span> },
+            { key: 'origin', label: 'Originating Office' },
+            { key: 'timestamp', label: 'Timestamp' },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => {
+                    setActionSuccess(`Alert ${r.alertId} acknowledged and routed to concerned desk.`);
+                  }}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Acknowledge
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { alertId: 'ALT-8841', severity: 'High', title: 'Section 11 Gazette Declaration Pending e-Sign', origin: 'Collectorate Revenue Cell', timestamp: '1 hour ago' },
+            { alertId: 'ALT-8840', severity: 'Medium', title: 'Stage II Forest Diversion Joint Committee Inspection Scheduled', origin: 'MoEFCC Forest Division', timestamp: '4 hours ago' },
+            { alertId: 'ALT-8839', severity: 'High', title: 'PFMS DBT Batch #9482-A (₹45.2 Cr) Sanctioned & Dispatched', origin: 'State Treasury Gateway', timestamp: '1 day ago' },
+          ],
+        };
+
+      // ==========================================
       // Default Fallback for other modules
       // ==========================================
       default:
@@ -807,6 +1195,159 @@ export default function GenericModulePage() {
                     <label className="font-bold text-slate-700 block text-xs">Revenue Court Magistrate Directive / Order:</label>
                     <textarea
                       defaultValue={`Summons issued to both parties for digital appearance on ${selectedRecord.scheduledDate || 'next hearing'}. Field revenue patwari instructed to submit demarcation overlay.`}
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-proposal-review' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-[#003178] flex justify-between">
+                      <span>Proposal #{selectedRecord.id}</span>
+                      <span>{selectedRecord.agency}</span>
+                    </div>
+                    <div><strong>Project:</strong> {selectedRecord.name}</div>
+                    <div><strong>Required Land Extent:</strong> {selectedRecord.totalArea} Hectares</div>
+                    <div><strong>Estimated Financial Outlay:</strong> {formatINR(selectedRecord.estimatedCost)}</div>
+                    <div><strong>SIA Approval Status:</strong> Approved by Multi-Disciplinary Expert Group</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">District Collector Official Remarks / Directions:</label>
+                    <textarea
+                      defaultValue="Proposal examined under Section 7 & Section 11(1) of RFCTLARR Act (2013). Recommended for preliminary Gazette issuance."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-objection-direction' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-amber-900 flex justify-between">
+                      <span>Docket #{selectedRecord.trackingId}</span>
+                      <span>{selectedRecord.category}</span>
+                    </div>
+                    <div><strong>Objector:</strong> {selectedRecord.filedBy} (Plot #{selectedRecord.parcelId})</div>
+                    <div><strong>Objection Details:</strong> {selectedRecord.description}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Collector Statutory Direction to LAO:</label>
+                    <textarea
+                      defaultValue="LAO directed to conduct joint inspection with Horticulture Officer within 7 days and submit revised tree valuation schedule."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-inter-dept' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-slate-900">{selectedRecord.dept}</div>
+                    <div><strong>Required NOC:</strong> {selectedRecord.clearanceType}</div>
+                    <div><strong>Linked Project:</strong> {selectedRecord.project}</div>
+                    <div><strong>SLA Due Date:</strong> {selectedRecord.slaDue}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">District Collector Notice / Directive:</label>
+                    <textarea
+                      defaultValue="Joint District Coordination Meeting scheduled under chairmanship of District Collector on Monday 11:00 AM. Clearances to be expedited."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-compensation-sanction' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-emerald-900 flex justify-between">
+                      <span>ULPIN #{selectedRecord.parcelId}</span>
+                      <span className="font-bold">{formatINR(selectedRecord.totalAward)}</span>
+                    </div>
+                    <div><strong>Landowner:</strong> {selectedRecord.owner} ({selectedRecord.village})</div>
+                    <div><strong>Base Land Value:</strong> {formatINR(selectedRecord.baseValue)}</div>
+                    <div><strong>100% Solatium (Sec 30):</strong> {formatINR(selectedRecord.solatium)}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Statutory Award Sanction Order:</label>
+                    <textarea
+                      defaultValue="Award determination sanctioned under Section 23 of RFCTLARR Act (2013). Authorized for electronic disbursement via PFMS."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-possession' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-slate-900">{selectedRecord.sector}</div>
+                    <div><strong>Acquired Extent:</strong> {selectedRecord.area}</div>
+                    <div><strong>Project Displaced Families:</strong> {selectedRecord.paf}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Section 38 Panchnama & Possession Certificate:</label>
+                    <textarea
+                      defaultValue="Physical possession certificate confirmed after 100% compensation disbursement. Revenue records updated with state alienation stamp."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-exception-intervene' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-red-900 flex justify-between">
+                      <span>Exception #{selectedRecord.id}</span>
+                      <span className="font-bold text-red-700">{selectedRecord.severity}</span>
+                    </div>
+                    <div><strong>Category:</strong> {selectedRecord.category}</div>
+                    <div><strong>Root Cause:</strong> {selectedRecord.rootCause}</div>
+                    <div><strong>Days Overdue:</strong> {selectedRecord.overdueDays} Days</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Collector Executive Intervention Directive:</label>
+                    <textarea
+                      defaultValue="Priority fast-track resolution ordered. SDM / LAO instructed to resolve within 48 hours and submit compliance report."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'collector-escalation-decree' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-purple-50 border border-purple-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-purple-900 flex justify-between">
+                      <span>Escalation #{selectedRecord.id}</span>
+                      <span>{selectedRecord.urgency}</span>
+                    </div>
+                    <div><strong>Referred By:</strong> {selectedRecord.referredBy}</div>
+                    <div><strong>Contest:</strong> {selectedRecord.subject}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">District Collector Appellate Decree / Order:</label>
+                    <textarea
+                      defaultValue="Collectorate order passed under statutory supervisory powers. Directions issued to both authorities for immediate enforcement."
                       rows={3}
                       className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
                     />

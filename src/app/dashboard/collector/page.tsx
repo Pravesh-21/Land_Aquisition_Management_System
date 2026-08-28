@@ -74,11 +74,29 @@ export default function CollectorDashboard() {
     },
   ];
 
+  const collectorModules = [
+    { id: '1', title: 'Land & Parcel Overview', desc: 'GIS spatial overview of affected parcels & owners', href: '/dashboard/collector/parcels', icon: 'landscape', badge: '142 Plots' },
+    { id: '2', title: 'Workflow Pipeline', desc: 'Statutory Section 4 to 38 movement tracking', href: '/dashboard/collector/workflow', icon: 'schema', badge: '5 Stages' },
+    { id: '3', title: 'e-Sign Approvals', desc: 'Aadhaar DSC digital signature for Gazette orders', href: '/dashboard/collector/approvals', icon: 'verified', badge: isSigned ? '1 Signed ✓' : '1 Pending' },
+    { id: '4', title: 'Proposal Review & Decision', desc: 'Approve, return or escalate agency proposals', href: '/dashboard/collector/proposal-review', icon: 'rate_review', badge: '6 Active' },
+    { id: '5', title: 'Statutory Objection Oversight', desc: 'Section 15 hearings & LAO inquiry supervision', href: '/dashboard/collector/objection-oversight', icon: 'gavel', badge: '34 Cases' },
+    { id: '6', title: 'Inter-Dept Coordination', desc: 'MoEFCC, PWD, Railways clearance single-window', href: '/dashboard/collector/inter-dept', icon: 'hub', badge: '14 Projects' },
+    { id: '7', title: 'Compensation Monitoring', desc: 'Section 26-30 award schedule & 100% solatium', href: '/dashboard/collector/compensation-monitoring', icon: 'payments', badge: '₹ 184.2 Cr' },
+    { id: '8', title: 'Possession & R&R Monitoring', desc: 'Section 38 panchnama & displaced families', href: '/dashboard/collector/possession-rr', icon: 'home_work', badge: '112.4 Ha' },
+    { id: '9', title: 'Delay & Exception Engine', desc: 'Section 25 timeline warnings & PFMS bank retry', href: '/dashboard/collector/delay-exceptions', icon: 'warning', badge: '4 Critical' },
+    { id: '10', title: 'Escalation Management', desc: 'High-level IAS Collector decrees and dispute orders', href: '/dashboard/collector/escalations', icon: 'priority_high', badge: '5 Matters' },
+    { id: '11', title: 'District MIS & Reports', desc: 'Automated statutory returns & CAG export files', href: '/dashboard/collector/mis-reports', icon: 'analytics', badge: '24 Reports' },
+    { id: '12', title: 'Audit & Activity Oversight', desc: 'Cryptographic immutable digital transaction log', href: '/dashboard/collector/audit-trail', icon: 'history', badge: '1,842 Logs' },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
-          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">District Collector Executive Dashboard</h1>
+          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
+            District Administration • Office of District Collector
+          </div>
+          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">District Collector Executive Command Center</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
             Statutory Section 11 & Section 19 Gazette e-Sign authorization, spatial cadastral parcel oversight, and asset count verification under RFCTLARR Act (2013).
           </p>
@@ -101,6 +119,7 @@ export default function CollectorDashboard() {
         </div>
       )}
 
+      {/* KPI Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         <KPICard data={{ label: 'District Projects', value: '14', subtitle: 'District Nagpur', color: 'navy', icon: 'account_balance' }} />
         <KPICard data={{ label: 'Section 11 Pending', value: isSigned ? '2' : '3', subtitle: isSigned ? '1 Gazette Sanctioned ✓' : 'Gazette Notifications', color: 'ochre', icon: 'gavel' }} />
@@ -122,12 +141,59 @@ export default function CollectorDashboard() {
         <ProjectLandMap height="480px" showLayerControls={true} showAssets={true} />
       </div>
 
+      {/* Acquisition Proposal Approval Queue */}
       <DataGrid
         title="Acquisition Proposal Approval Queue (Statutory Section 11 / 19)"
         columns={proposalColumns}
         data={projectsData}
         totalItems={projectsData.length}
       />
+
+      {/* 14 Key Collector Features Matrix */}
+      <div className="space-y-4 pt-4 border-t border-slate-200">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-[20px] font-bold text-[var(--color-gov-navy)]">District Collector Statutory Modules (14 Key Operations)</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Comprehensive executive oversight, statutory clearances, and inter-departmental enforcement.</p>
+          </div>
+          <span className="px-3 py-1 bg-blue-50 text-[#0072BC] font-bold text-xs rounded border border-blue-200">
+            14 Modules Active
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {collectorModules.map((mod) => (
+            <Link
+              key={mod.id}
+              href={mod.href}
+              className="gov-card p-5 hover:border-[var(--color-gov-navy)] hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <div className="w-10 h-10 rounded bg-blue-50 text-[var(--color-gov-navy)] flex items-center justify-center group-hover:bg-[var(--color-gov-navy)] group-hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">{mod.icon}</span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-bold text-[10px] rounded group-hover:bg-blue-100 group-hover:text-[#0072BC]">
+                    {mod.badge}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm group-hover:text-[var(--color-gov-navy)] transition-colors">
+                    {mod.title}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed line-clamp-2">
+                    {mod.desc}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[var(--color-gov-navy)]">
+                <span>Access Module</span>
+                <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
