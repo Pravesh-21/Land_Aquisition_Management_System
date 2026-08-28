@@ -10,14 +10,16 @@ export default function VegetationPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
-          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">Feature 4 • AI/ML Engine 1</div>
-          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">OpenCV HSV Crop & Vegetation Density Indexing</h1>
+          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
+            Satellite Agricultural Assessment
+          </div>
+          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Crop & Vegetation Density Analysis</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Automated HSV color space masking on satellite imagery tiles to classify crop coverage percentage & tree canopy density per parcel.
+            Automated multispectral and HSV color masking on satellite imagery tiles to classify crop coverage percentage and tree canopy density for compensation assessment.
           </p>
         </div>
-        <button className="px-5 py-2.5 bg-[var(--color-land-green)] text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 hover:opacity-90">
-          <span className="material-symbols-outlined text-[18px]">eco</span> Run OpenCV Masking
+        <button className="px-5 py-2.5 bg-[var(--color-land-green)] text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 hover:opacity-90 cursor-pointer">
+          <span className="material-symbols-outlined text-[18px]">eco</span> Run Vegetation Indexing
         </button>
       </div>
 

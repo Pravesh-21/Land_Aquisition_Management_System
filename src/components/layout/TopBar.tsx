@@ -15,14 +15,22 @@ export default function TopBar() {
     <>
       <header className="bg-[var(--color-surface-card)] border-b border-[var(--color-outline-variant)] h-[56px] sticky top-[32px] z-20 flex justify-between items-center px-6">
         <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center bg-[var(--color-surface-container-low)] border border-[var(--color-outline-variant)] px-3 py-1.5 focus-within:border-[var(--color-gov-navy)] transition-all">
-            <span className="material-symbols-outlined text-[var(--color-outline)] text-[20px]">search</span>
-            <input
-              className="bg-transparent border-none outline-none text-sm px-2 text-[var(--color-on-surface)] placeholder:text-[var(--color-outline)] w-64 focus:ring-0"
-              placeholder="Search records, ULPIN, cases..."
-              type="text"
-            />
-          </div>
+          {role !== 'CITIZEN' && (
+            <div className="hidden md:flex items-center bg-[var(--color-surface-container-low)] border border-[var(--color-outline-variant)] px-3 py-1.5 focus-within:border-[var(--color-gov-navy)] transition-all">
+              <span className="material-symbols-outlined text-[var(--color-outline)] text-[20px]">search</span>
+              <input
+                className="bg-transparent border-none outline-none text-sm px-2 text-[var(--color-on-surface)] placeholder:text-[var(--color-outline)] w-64 focus:ring-0"
+                placeholder="Search records, ULPIN, cases..."
+                type="text"
+              />
+            </div>
+          )}
+          {role === 'CITIZEN' && (
+            <div className="text-xs font-semibold text-[var(--color-gov-navy)] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-[var(--color-gov-navy)]">account_balance</span>
+              <span>National Land Acquisition Single Window Portal</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs font-semibold text-[var(--color-gov-navy)] bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] px-2 py-1 uppercase tracking-wider">

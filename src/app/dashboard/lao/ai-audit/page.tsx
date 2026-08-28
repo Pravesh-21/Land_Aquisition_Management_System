@@ -14,14 +14,16 @@ export default function AIAuditPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
-          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">Feature 3 • AI/ML Engine 1</div>
-          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">YOLOv8-OBB AI Satellite Asset Audit Pipeline</h1>
+          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
+            Automated Satellite Structure Inventory
+          </div>
+          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">YOLOv8-OBB Satellite Asset Audit Pipeline</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Automated structure footprint detection using Oriented Bounding Boxes (OBB) for rotated building footprints, agricultural sheds, wells, & boundary walls with instant surface area computation.
+            Oriented Bounding Box (OBB) machine learning analysis on high-resolution satellite tiles to detect buildings, sheds, boundary walls, and wells with automatic surface area calculation for compensation verification.
           </p>
         </div>
-        <button className="px-5 py-2.5 bg-[var(--color-gov-ochre)] text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 hover:bg-[var(--color-gov-ochre-bright)]">
-          <span className="material-symbols-outlined text-[18px]">satellite_alt</span> Trigger Satellite Aerial Audit
+        <button className="px-5 py-2.5 bg-[var(--color-gov-ochre)] text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 hover:bg-[var(--color-gov-ochre-bright)] cursor-pointer">
+          <span className="material-symbols-outlined text-[18px]">satellite_alt</span> Run Aerial Asset Scan
         </button>
       </div>
 

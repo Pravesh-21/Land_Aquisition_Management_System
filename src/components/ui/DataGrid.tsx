@@ -17,25 +17,42 @@ interface DataGridProps {
   showPagination?: boolean;
   totalItems?: number;
   pageSize?: number;
+  showExport?: boolean;
+  showFilter?: boolean;
 }
 
-export default function DataGrid({ columns, data, title, actions, onRowClick, showPagination = true, totalItems, pageSize = 10 }: DataGridProps) {
+export default function DataGrid({
+  columns,
+  data,
+  title,
+  actions,
+  onRowClick,
+  showPagination = true,
+  totalItems,
+  pageSize = 10,
+  showExport = false,
+  showFilter = false,
+}: DataGridProps) {
   const total = totalItems || data.length;
 
   return (
     <div className="gov-card overflow-hidden flex flex-col">
       {/* Header */}
-      {(title || actions) && (
+      {(title || actions || showFilter || showExport) && (
         <div className="flex justify-between items-center p-4 border-b border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)]">
           {title && <h3 className="text-[18px] font-semibold text-[var(--color-gov-navy)]">{title}</h3>}
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             {actions}
-            <button className="px-3 py-1.5 bg-white border border-[var(--color-outline-variant)] text-[var(--color-gov-navy)] text-xs font-medium hover:bg-[var(--color-surface-variant)] transition-colors flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">filter_list</span> Filter
-            </button>
-            <button className="px-3 py-1.5 bg-white border border-[var(--color-outline-variant)] text-[var(--color-gov-navy)] text-xs font-medium hover:bg-[var(--color-surface-variant)] transition-colors flex items-center gap-1">
-              <span className="material-symbols-outlined text-[14px]">download</span> Export CSV
-            </button>
+            {showFilter && (
+              <button className="px-3 py-1.5 bg-white border border-[var(--color-outline-variant)] text-[var(--color-gov-navy)] text-xs font-medium hover:bg-[var(--color-surface-variant)] transition-colors flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">filter_list</span> Filter
+              </button>
+            )}
+            {showExport && (
+              <button className="px-3 py-1.5 bg-white border border-[var(--color-outline-variant)] text-[var(--color-gov-navy)] text-xs font-medium hover:bg-[var(--color-surface-variant)] transition-colors flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">download</span> Export CSV
+              </button>
+            )}
           </div>
         </div>
       )}

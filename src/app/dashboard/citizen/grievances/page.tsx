@@ -15,10 +15,12 @@ export default function GrievancesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b border-[var(--color-outline-variant)] pb-4">
-        <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">Feature 11 • Revenue Court Grievances</div>
+        <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
+          Citizen Redressal & Objections Portal
+        </div>
         <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Raise Objection & Grievances</h1>
         <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-          Submit formal objections regarding land acquisition processes, valuation disputes, or boundary anomalies directly to Tehsildar Revenue Court portal.
+          Submit formal statutory objections regarding land acquisition processes, valuation disputes, or boundary anomalies directly to the Competent Revenue Authority.
         </p>
       </div>
 

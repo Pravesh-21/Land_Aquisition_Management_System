@@ -30,13 +30,15 @@ export default function Sidebar() {
         <div className="text-xs text-white/70 truncate">{roleConfig.user.designation}</div>
       </div>
 
-      {/* CTA Button */}
-      <div className="px-4 py-3 flex-shrink-0">
-        <button className="w-full bg-[var(--color-gov-ochre-bright)] text-[#663500] font-semibold text-xs py-2.5 px-4 flex items-center justify-center gap-2 hover:bg-[var(--color-gov-ochre)] hover:text-white transition-colors uppercase tracking-wider">
-          <span className="material-symbols-outlined text-[16px]">add</span>
-          New Action
-        </button>
-      </div>
+      {/* CTA Button for Department Officers */}
+      {roleConfig.id !== 'CITIZEN' && (
+        <div className="px-4 py-3 flex-shrink-0">
+          <button className="w-full bg-[var(--color-gov-ochre-bright)] text-[#663500] font-semibold text-xs py-2.5 px-4 flex items-center justify-center gap-2 hover:bg-[var(--color-gov-ochre)] hover:text-white transition-colors uppercase tracking-wider">
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            New Action
+          </button>
+        </div>
+      )}
 
       {/* Navigation Links */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">

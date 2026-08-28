@@ -7,8 +7,10 @@ export default function FieldSurveyPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
-          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">Feature 8 • Anti-Fraud Geo-Verification</div>
-          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Offline-First Geo-Fenced Mobile Survey & Anti-Fraud Suite</h1>
+          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
+            Ground Verification & Field Audit Suite
+          </div>
+          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Geo-Fenced Mobile Field Survey Review</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
             Validates live GPS coordinates, geo-fence plot boundaries, EXIF metadata integrity, & cryptographic timestamping for ground verification survey photos.
           </p>
