@@ -1,19 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StepTracker from '@/components/ui/StepTracker';
+
+const STORAGE_KEY = 'bhu_collector_section11_signed';
 
 export default function CollectorApprovalsPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [consent, setConsent] = useState(false);
   const [signed, setSigned] = useState(false);
+  const [signTimestamp, setSignTimestamp] = useState<string>('');
+
+  // Restore signature state from sessionStorage
+  useEffect(() => {
+    try {
+      const isSigned = sessionStorage.getItem(STORAGE_KEY);
+      if (isSigned === 'true') {
+        setSigned(true);
+        setConsent(true);
+        setOtp(['1', '2', '3', '4', '5', '6']);
+        setSignTimestamp(sessionStorage.getItem(`${STORAGE_KEY}_time`) || new Date().toLocaleString('en-IN'));
+      }
+    } catch (e) {
+      console.error('Failed to read signature state:', e);
+    }
+  }, []);
 
   const handleOtpChange = (index: number, val: string) => {
     if (val.length <= 1) {
       const newOtp = [...otp];
       newOtp[index] = val;
       setOtp(newOtp);
+    }
+  };
+
+  const handleQuickFill = () => {
+    setOtp(['1', '2', '3', '4', '5', '6']);
+    setConsent(true);
+  };
+
+  const handleSign = () => {
+    const timeStr = new Date().toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    setSigned(true);
+    setSignTimestamp(timeStr);
+    try {
+      sessionStorage.setItem(STORAGE_KEY, 'true');
+      sessionStorage.setItem(`${STORAGE_KEY}_time`, timeStr);
+    } catch (e) {
+      console.error('Failed to save signature state:', e);
+    }
+  };
+
+  const handleReset = () => {
+    setSigned(false);
+    setOtp(['', '', '', '', '', '']);
+    setConsent(false);
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(`${STORAGE_KEY}_time`);
+    } catch (e) {
+      console.error('Failed to reset signature state:', e);
     }
   };
 
@@ -30,10 +84,18 @@ export default function CollectorApprovalsPage() {
             Statutory declaration under Right to Fair Compensation and Transparency in Land Acquisition Act, 2013.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button className="p-2 border border-[var(--color-outline-variant)] bg-white"><span className="material-symbols-outlined text-[18px]">search</span></button>
-          <button className="p-2 border border-[var(--color-outline-variant)] bg-white"><span className="material-symbols-outlined text-[18px]">zoom_in</span></button>
-          <button className="p-2 border border-[var(--color-outline-variant)] bg-white"><span className="material-symbols-outlined text-[18px]">print</span></button>
+        <div className="flex items-center gap-2">
+          {signed && (
+            <button
+              onClick={handleReset}
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded border border-slate-300 transition-colors"
+            >
+              Reset for Demo
+            </button>
+          )}
+          <button className="p-2 border border-[var(--color-outline-variant)] bg-white hover:bg-slate-50"><span className="material-symbols-outlined text-[18px]">search</span></button>
+          <button className="p-2 border border-[var(--color-outline-variant)] bg-white hover:bg-slate-50"><span className="material-symbols-outlined text-[18px]">zoom_in</span></button>
+          <button className="p-2 border border-[var(--color-outline-variant)] bg-white hover:bg-slate-50"><span className="material-symbols-outlined text-[18px]">print</span></button>
         </div>
       </div>
 
@@ -41,7 +103,7 @@ export default function CollectorApprovalsPage() {
         {/* Gazette Document Viewer (Left 7 Cols) */}
         <div className="lg:col-span-7 gov-card p-8 bg-white border border-[var(--color-outline-variant)] space-y-6 min-h-[600px] text-xs">
           <div className="text-center space-y-2 border-b-2 border-[var(--color-gov-navy)] pb-6">
-            <div className="w-16 h-16 rounded-full bg-white border border-slate-300 p-1 flex items-center justify-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-white border border-slate-300 p-1 flex items-center justify-center shadow-sm mx-auto">
               <img src="/logo.png?v=3" alt="Govt Emblem" className="w-full h-full object-contain rounded-full" />
             </div>
             <h2 className="text-[22px] font-bold text-[var(--color-on-surface)] tracking-tight uppercase">
@@ -59,7 +121,7 @@ export default function CollectorApprovalsPage() {
 
           <div className="space-y-4 leading-relaxed text-[13px] text-justify text-[var(--color-on-surface)]">
             <p>
-              <strong>S.O. 4592(E).—</strong> Whereas it appears to the Appropriate Government that a total of 45.2 Hectares of land is required in the Village of Ramgarh, Tehsil Sadar, District Example for public purpose, namely, for the construction of a new National Highway bypass.
+              <strong>S.O. 4592(E).—</strong> Whereas it appears to the Appropriate Government that a total of 45.2 Hectares of land is required in the Village of Ramgarh, Tehsil Sadar, District Nagpur for public purpose, namely, for the construction of a new National Highway corridor expansion.
             </p>
             <p>
               And whereas, the Social Impact Assessment (SIA) report has been evaluated and approved by the Expert Group under Section 7 of the Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013.
@@ -80,12 +142,33 @@ export default function CollectorApprovalsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-outline-variant)]">
-                <tr><td className="p-2 border-r border-[var(--color-outline-variant)]">45/1</td><td className="p-2 border-r border-[var(--color-outline-variant)]">1.2</td><td className="p-2">Agricultural</td></tr>
-                <tr><td className="p-2 border-r border-[var(--color-outline-variant)]">45/2</td><td className="p-2 border-r border-[var(--color-outline-variant)]">0.8</td><td className="p-2">Barren</td></tr>
-                <tr><td className="p-2 border-r border-[var(--color-outline-variant)]">46</td><td className="p-2 border-r border-[var(--color-outline-variant)]">2.5</td><td className="p-2">Agricultural</td></tr>
+                <tr><td className="p-2 border-r border-[var(--color-outline-variant)]">442/1-A</td><td className="p-2 border-r border-[var(--color-outline-variant)]">1.42</td><td className="p-2">Agricultural (Irrigated)</td></tr>
+                <tr><td className="p-2 border-r border-[var(--color-outline-variant)]">445/1</td><td className="p-2 border-r border-[var(--color-outline-variant)]">2.15</td><td className="p-2">Mixed Agriculture</td></tr>
+                <tr><td className="p-2 border-r border-[var(--color-outline-variant)]">450/2-A</td><td className="p-2 border-r border-[var(--color-outline-variant)]">3.20</td><td className="p-2">Gram Panchayat Land</td></tr>
               </tbody>
             </table>
           </div>
+
+          {/* Digital Signature Seal on Document when Signed */}
+          {signed && (
+            <div className="p-4 bg-emerald-50 border-2 border-emerald-500 rounded-lg flex items-center justify-between animate-in zoom-in-95 duration-200">
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-[20px] text-emerald-700">verified</span>
+                  DIGITALLY SIGNED & GAZETTE SANCTIONED
+                </div>
+                <div className="text-[11px] text-emerald-800">
+                  Signed by: <strong>Sh. Ramesh Kumar, IAS</strong> (District Collector, Nagpur)
+                </div>
+                <div className="font-mono text-[10px] text-emerald-700">
+                  UIDAI DSC-Aadhaar • Timestamp: {signTimestamp || 'Active Session'}
+                </div>
+              </div>
+              <div className="w-12 h-12 rounded-full border-2 border-emerald-600 bg-white flex items-center justify-center font-bold text-emerald-700 text-xs shadow-sm">
+                SEALED
+              </div>
+            </div>
+          )}
         </div>
 
         {/* e-Signature Panel (Right 5 Cols) */}
@@ -131,7 +214,18 @@ export default function CollectorApprovalsPage() {
 
             {/* OTP Input Block */}
             <div className="p-4 border border-[var(--color-outline-variant)] bg-white space-y-3">
-              <div className="text-xs font-semibold text-[var(--color-on-surface)]">Enter OTP sent to registered mobile</div>
+              <div className="flex justify-between items-center text-xs font-semibold text-[var(--color-on-surface)]">
+                <span>Enter OTP sent to registered mobile</span>
+                {!signed && (
+                  <button
+                    type="button"
+                    onClick={handleQuickFill}
+                    className="text-[11px] text-[#0072BC] hover:underline font-bold"
+                  >
+                    ⚡ Auto-Fill Demo OTP
+                  </button>
+                )}
+              </div>
               <div className="flex gap-2 justify-center">
                 {otp.map((digit, idx) => (
                   <input
@@ -140,12 +234,13 @@ export default function CollectorApprovalsPage() {
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    disabled={signed}
                     className="w-10 h-10 text-center border border-[var(--color-outline-variant)] text-lg font-bold font-mono focus:border-[var(--color-gov-navy)] focus:outline-none"
                   />
                 ))}
               </div>
               <div className="flex justify-between text-[11px] text-[var(--color-on-surface-variant)]">
-                <span>Time remaining: 02:45</span>
+                <span>Session Time remaining: 04:30</span>
                 <button className="text-[var(--color-gov-navy)] font-semibold hover:underline">Resend OTP</button>
               </div>
             </div>
@@ -155,6 +250,7 @@ export default function CollectorApprovalsPage() {
                 type="checkbox"
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
+                disabled={signed}
                 className="w-4 h-4 accent-[var(--color-gov-navy)]"
               />
               <span>I hereby consent to provide my Aadhaar Number for authentication with UIDAI to generate an e-signature.</span>
@@ -162,14 +258,21 @@ export default function CollectorApprovalsPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-[var(--color-outline-variant)]">
-            <button className="py-3 bg-white border border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] text-xs font-bold uppercase tracking-wider">
-              Cancel
+            <button
+              onClick={handleReset}
+              className="py-3 bg-white border border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors"
+            >
+              {signed ? 'Reset' : 'Cancel'}
             </button>
             <button
-              onClick={() => setSigned(true)}
-              disabled={!consent || otp.join('').length < 6}
-              className={`py-3 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 ${
-                signed ? 'bg-[var(--color-land-green)]' : consent && otp.join('').length === 6 ? 'bg-[var(--color-gov-ochre)] hover:bg-[var(--color-gov-ochre-bright)]' : 'bg-slate-300 cursor-not-allowed'
+              onClick={handleSign}
+              disabled={signed || !consent || otp.join('').length < 6}
+              className={`py-3 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+                signed
+                  ? 'bg-emerald-700 cursor-default'
+                  : consent && otp.join('').length === 6
+                  ? 'bg-[var(--color-gov-ochre)] hover:bg-[var(--color-gov-ochre-bright)] cursor-pointer shadow-md'
+                  : 'bg-slate-300 cursor-not-allowed'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">{signed ? 'check_circle' : 'draw'}</span>

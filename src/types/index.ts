@@ -189,10 +189,12 @@ export interface Beneficiary {
 }
 
 // --- Grievance ---
+export type GrievanceCategory = 'Valuation Dispute' | 'Boundary / Demarcation' | 'Compensation Delay' | 'Ownership / Title' | 'Procedural';
+
 export interface Grievance {
   id: string;
   trackingId: string;
-  category: 'Valuation Dispute' | 'Boundary / Demarcation' | 'Compensation Delay' | 'Ownership / Title' | 'Procedural';
+  category: GrievanceCategory;
   parcelId: string;
   subject: string;
   description: string;

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import StatusBadge from '@/components/ui/StatusBadge';
 
 interface CitizenDoc {
@@ -77,8 +78,55 @@ const CITIZEN_DOCS: CitizenDoc[] = [
 ];
 
 export default function CitizenDocumentsPage() {
+  const [downloadToast, setDownloadToast] = useState<{ title: string; ref: string } | null>(null);
+
   const handleDownload = (doc: CitizenDoc) => {
-    alert(`Downloading ${doc.title} (${doc.fileSize})...\nReference: ${doc.referenceNumber}`);
+    // Generate an authentic official certificate text file blob and trigger browser download
+    const documentContent = `========================================================================
+GOVERNMENT OF INDIA • MINISTRY OF RURAL DEVELOPMENT
+BHU-NIRIKSHAN NATIONAL LAND ACQUISITION REPOSITORY
+========================================================================
+
+DOCUMENT TITLE: ${doc.title}
+DOCUMENT REF:   ${doc.referenceNumber}
+CATEGORY:       ${doc.category}
+DATE OF ISSUE:  ${doc.issueDate}
+ISSUING OFFICE: ${doc.issuingAuthority}
+AUTHENTICATION: VERIFIED & DIGITALLY SIGNED (256-Bit SHA-256)
+
+BENEFICIARY DETAILS:
+Landowner Name: Sh. Rajendra Patel
+Survey / Plot:  Survey Plot #442/1-A (ULPIN: IN-MH-440001-A12B)
+Village/Tehsil: Hingna, Nagpur, Maharashtra
+Acquired Area:  1.42 Hectares (3.51 Acres)
+Statutory Act:  RFCTLARR Act (2013)
+
+SUMMARY STATEMENT:
+This official certified document confirms the statutory recording and digital
+dispatch of ${doc.title} under the authority of ${doc.issuingAuthority}.
+All compensatory solatium (100%) and 12% additional interest computations are
+formally sealed in accordance with Section 26-30 of the RFCTLARR Act.
+
+Digitally Authorized by:
+Competent Authority / Land Acquisition Officer
+Government of India e-Sign Seal: SHA256-${Date.now().toString(16).toUpperCase()}
+========================================================================`;
+
+    const blob = new Blob([documentContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${doc.referenceNumber}_Official_Certificate.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Show sleek government notification banner
+    setDownloadToast({ title: doc.title, ref: doc.referenceNumber });
+    setTimeout(() => {
+      setDownloadToast(null);
+    }, 5000);
   };
 
   return (
@@ -96,48 +144,86 @@ export default function CitizenDocumentsPage() {
         </div>
       </div>
 
-      {/* Summary Banner */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded flex items-center justify-between text-xs text-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#0072BC]">verified</span>
-          <span>All documents are cryptographically signed by the Competent Authority and valid for all legal & revenue purposes.</span>
-        </div>
-        <span className="font-bold text-[#003178]">6 Documents Available</span>
-      </div>
-
-      {/* Documents Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {CITIZEN_DOCS.map((doc) => (
-          <div key={doc.id} className="gov-card p-5 bg-white border border-slate-200 flex flex-col justify-between space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between items-start gap-2">
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase rounded">
-                  {doc.category}
-                </span>
-                <span className="text-[11px] text-slate-500">{doc.fileSize} • {doc.issueDate}</span>
-              </div>
-
-              <h3 className="text-[16px] font-bold text-slate-900 leading-snug">{doc.title}</h3>
-
-              <div className="text-xs text-slate-600 space-y-0.5 pt-1">
-                <div><strong>Authority:</strong> {doc.issuingAuthority}</div>
-                <div className="font-mono text-[11px] text-slate-500"><strong>Ref:</strong> {doc.referenceNumber}</div>
-              </div>
+      {/* Download Success Toast Notification */}
+      {downloadToast && (
+        <div className="p-4 bg-emerald-50 border-2 border-emerald-500 rounded-lg flex items-center justify-between text-xs text-emerald-950 shadow-md animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+              ✓
             </div>
-
-            <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-              <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span> Verified Copy
-              </span>
-              <button
-                onClick={() => handleDownload(doc)}
-                className="px-4 py-2 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-bold uppercase rounded flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[16px]">download</span> Download PDF
-              </button>
+            <div>
+              <div className="font-bold text-sm text-emerald-900">Document Downloaded Successfully</div>
+              <div className="text-emerald-700">
+                {downloadToast.title} • Ref: <span className="font-mono font-bold">{downloadToast.ref}</span>
+              </div>
             </div>
           </div>
-        ))}
+          <button
+            onClick={() => setDownloadToast(null)}
+            className="text-emerald-800 hover:text-emerald-950 font-bold p-1 text-sm"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Summary Banner */}
+      <div className="p-4 bg-blue-50 border border-blue-200 rounded flex items-center justify-between text-xs text-slate-800">
+        <div className="flex items-center gap-3">
+          <span className="material-symbols-outlined text-[24px] text-[#0072BC]">verified</span>
+          <div>
+            <div className="font-bold text-[#003178]">6 Digitally Signed Documents Available</div>
+            <div className="text-slate-600">All records authenticated via National Land Record Modernization Program (DILRMP).</div>
+          </div>
+        </div>
+        <span className="px-3 py-1 bg-white border border-[#0072BC] text-[#0072BC] font-bold rounded">
+          e-Sign Verified
+        </span>
+      </div>
+
+      {/* Documents List */}
+      <div className="gov-card overflow-hidden">
+        <div className="p-4 bg-[var(--color-surface-container-low)] border-b border-[var(--color-outline-variant)] flex justify-between items-center">
+          <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)]">Certified Document Registry</h3>
+          <span className="text-xs text-slate-500">Click Download to save verified copy</span>
+        </div>
+
+        <div className="divide-y divide-slate-200 text-xs">
+          {CITIZEN_DOCS.map((doc) => (
+            <div key={doc.id} className="p-4 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded bg-red-50 border border-red-200 flex items-center justify-center text-red-700 font-bold text-xs shrink-0">
+                  PDF
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900 text-sm">{doc.title}</span>
+                    <span className="px-2 py-0.5 bg-blue-50 text-[#0072BC] font-semibold rounded text-[10px] border border-blue-200">
+                      {doc.category}
+                    </span>
+                  </div>
+                  <div className="text-slate-500 text-[11px]">
+                    <strong>Issuing Office:</strong> {doc.issuingAuthority} • <strong>Date:</strong> {doc.issueDate}
+                  </div>
+                  <div className="font-mono text-slate-600 text-[11px]">
+                    Ref: {doc.referenceNumber} • Size: {doc.fileSize}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <StatusBadge status="Digital Certified" variant="success" icon="verified" />
+                <button
+                  onClick={() => handleDownload(doc)}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white font-bold rounded text-xs transition-colors uppercase tracking-wider cursor-pointer shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[16px]">download</span>
+                  Download
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

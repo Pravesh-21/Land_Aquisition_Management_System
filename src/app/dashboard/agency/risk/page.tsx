@@ -1,86 +1,87 @@
 'use client';
 
-import { mockRiskAssessments, mockParcels } from '@/data/mockData';
-import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
+import { useState } from 'react';
+import KPICard from '@/components/ui/KPICard';
+import { mockRiskAssessments } from '@/data/mockData';
 
-export default function RiskScoringPage() {
+export default function AgencyRiskScoringPage() {
+  const [bypassedUlpin, setBypassedUlpin] = useState<string | null>(null);
+
   return (
     <div className="space-y-6">
-      {/* Header - Cleaned without raw ML tags or retrain button */}
+      {/* Header */}
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
           <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
-            Predictive Decision Support Engine
+            Machine Learning & Risk Intelligence
           </div>
-          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Acquisition Delay & Litigation Risk Assessment</h1>
+          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Land Acquisition Risk Scoring & Delay Forecasting</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Predictive risk modeling (0–100%) computed using multi-variable indicators: historical revenue disputes, multi-owner title complexity, forest proximity, & litigation records.
+            Multi-factor parcel vulnerability analysis combining litigation history, ownership fragmentation, and forest proximity.
           </p>
         </div>
       </div>
 
-      {/* Risk Assessment Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {mockRiskAssessments.map((risk) => {
-          const parcel = mockParcels.find((p) => p.id === risk.parcelId) || mockParcels[0];
-          const isHighRisk = risk.overallRiskScore >= 70;
+      {/* Success Notification Toast */}
+      {bypassedUlpin && (
+        <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between text-xs text-emerald-900 shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-2 font-semibold">
+            <span className="material-symbols-outlined text-[20px] text-emerald-700">alt_route</span>
+            <span>Corridor bypass route simulated successfully for parcel {bypassedUlpin}. Buffer recalculated avoiding high-risk zone.</span>
+          </div>
+          <button
+            onClick={() => setBypassedUlpin(null)}
+            className="text-emerald-700 hover:text-emerald-900 font-bold ml-3"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
+      {/* KPI Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <KPICard data={{ label: 'Assessed Parcels', value: '5', subtitle: 'Corridor Alignment', color: 'navy', icon: 'analytics' }} />
+        <KPICard data={{ label: 'High Risk Flagged', value: '2', subtitle: 'Score > 80', color: 'red', icon: 'warning' }} />
+        <KPICard data={{ label: 'Bypass Recommended', value: '2', subtitle: 'Alternative Routes Feasible', color: 'ochre', icon: 'alt_route' }} />
+        <KPICard data={{ label: 'Low Risk Parcels', value: '2', subtitle: 'Proceed Directly', color: 'green', icon: 'check_circle' }} />
+      </div>
+
+      {/* Risk Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {mockRiskAssessments.map((item, idx) => {
+          const isHighRisk = item.overallRiskScore > 75;
           return (
-            <div
-              key={risk.parcelId}
-              className={`gov-card p-5 border-t-4 ${
-                isHighRisk ? 'border-t-[var(--color-status-error)]' : 'border-t-[var(--color-gov-ochre)]'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-4">
+            <div key={idx} className="gov-card p-6 space-y-4">
+              <div className="flex justify-between items-start border-b border-slate-200 pb-3">
                 <div>
-                  <div className="font-mono text-xs font-bold text-[var(--color-gov-navy)]">{parcel.ulpin}</div>
-                  <div className="text-[16px] font-bold text-[var(--color-on-surface)] mt-0.5">
-                    {parcel.ownerName} • {parcel.village}
-                  </div>
-                  <div className="text-xs text-[var(--color-on-surface-variant)]">
-                    Survey No. {parcel.surveyNumber} ({parcel.area} Ha)
-                  </div>
+                  <div className="font-mono text-sm font-bold text-[var(--color-gov-navy)]">Parcel #{item.parcelId}</div>
+                  <div className="text-xs text-slate-500 font-semibold mt-0.5">Recommendation: {item.recommendation}</div>
                 </div>
                 <div className="text-right">
-                  <div
-                    className={`text-[28px] font-bold ${
-                      isHighRisk ? 'text-[var(--color-status-error)]' : 'text-[var(--color-gov-ochre)]'
-                    }`}
-                  >
-                    {risk.overallRiskScore}%
+                  <div className={`text-2xl font-bold ${isHighRisk ? 'text-red-700' : item.overallRiskScore > 50 ? 'text-amber-600' : 'text-emerald-700'}`}>
+                    {item.overallRiskScore} <span className="text-xs font-normal text-slate-400">/ 100</span>
                   </div>
-                  <StatusBadge status={risk.recommendation} variant={getStatusVariant(risk.recommendation)} />
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                    isHighRisk ? 'bg-red-100 text-red-800' : item.overallRiskScore > 50 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {item.recommendation}
+                  </span>
                 </div>
               </div>
 
               {/* Factor Breakdown */}
-              <div className="space-y-3 pt-3 border-t border-[var(--color-outline-variant)] text-xs">
-                <div className="font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider">
-                  Risk Multipliers
-                </div>
-                {[
-                  { label: 'Dispute History', val: risk.factors.disputeHistory },
-                  { label: 'Forest Proximity', val: risk.factors.forestProximity },
-                  { label: 'Multi-Owner Title Complexity', val: risk.factors.multiOwnerComplexity },
-                  { label: 'Religious / Community Structure', val: risk.factors.religiousStructures },
-                  { label: 'Litigation History', val: risk.factors.litigationHistory },
-                ].map((f) => (
-                  <div key={f.label} className="space-y-1">
-                    <div className="flex justify-between font-medium">
-                      <span>{f.label}</span>
-                      <span className="font-bold">{f.val}%</span>
+              <div className="space-y-2 text-xs">
+                <div className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Vulnerability Factors</div>
+                {Object.entries(item.factors).map(([factor, score]) => (
+                  <div key={factor} className="space-y-1">
+                    <div className="flex justify-between text-slate-600">
+                      <span className="capitalize">{factor.replace(/([A-Z])/g, ' $1')}</span>
+                      <span className="font-bold">{score}%</span>
                     </div>
-                    <div className="w-full bg-[var(--color-surface-variant)] h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                       <div
-                        className={`h-1.5 transition-all ${
-                          f.val > 70
-                            ? 'bg-[var(--color-status-error)]'
-                            : f.val > 40
-                            ? 'bg-[var(--color-gov-ochre)]'
-                            : 'bg-[var(--color-land-green)]'
-                        }`}
-                        style={{ width: `${f.val}%` }}
+                        className={`h-full ${score > 70 ? 'bg-red-500' : score > 40 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${score}%` }}
                       ></div>
                     </div>
                   </div>
@@ -94,7 +95,7 @@ export default function RiskScoringPage() {
                     <span className="font-medium">High Risk Flagged • Corridor Realignment Recommended</span>
                   </div>
                   <button
-                    onClick={() => alert(`Alignment bypass simulation recorded for ${parcel.ulpin}`)}
+                    onClick={() => setBypassedUlpin(`P-00${idx + 1}`)}
                     className="px-3 py-1 bg-red-700 hover:bg-red-800 text-white font-bold uppercase text-[10px] rounded transition-colors cursor-pointer"
                   >
                     Simulate Bypass

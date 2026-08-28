@@ -283,9 +283,9 @@ export default function GenericModulePage() {
               key: 'action',
               label: 'Action',
               align: 'center' as const,
-              render: () => (
+              render: (_: any, r: any) => (
                 <button
-                  onClick={() => alert('DBT Authorization Pin generated. Dispatched to PFMS Single Window.')}
+                  onClick={() => setActionSuccess(`DBT Authorization PIN #84920 generated for ${r.name}. Electronic credit dispatched to PFMS / e-Kuber single window.`)}
                   className="px-3 py-1 bg-[var(--color-land-green)] text-white text-xs font-semibold rounded hover:opacity-90 cursor-pointer"
                 >
                   Authorize DBT
@@ -533,6 +533,119 @@ export default function GenericModulePage() {
         };
 
       // ==========================================
+      // Tehsildar & Revenue Court Dispute Cases
+      // ==========================================
+      case 'disputes':
+        return {
+          title: 'Revenue Court Boundary & Title Dispute Register',
+          category: 'Revenue Court & Tehsildar',
+          description: 'Statutory dispute management under Section 64 & Section 76 of RFCTLARR Act (2013). Manage boundary overlap petitions, title rivalries, and High Court stay injunctions.',
+          kpis: [
+            { label: 'Active Dispute Dockets', value: '18 Cases', subtitle: '4 New This Month', color: 'red', icon: 'gavel' },
+            { label: 'Scheduled Hearings', value: '5 This Week', subtitle: 'Summons Dispatched', color: 'navy', icon: 'event' },
+            { label: 'Injunction / Stays Logged', value: '2 High Court', subtitle: 'Stay Order Active', color: 'ochre', icon: 'lock' },
+            { label: 'Cases Resolved', value: '42 Orders', subtitle: 'Title Mutated in RoR', color: 'green', icon: 'task_alt' },
+          ],
+          columns: [
+            { key: 'caseId', label: 'Case Number', width: '150px', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'khasraNumber', label: 'Survey Plot' },
+            { key: 'village', label: 'Village & Tehsil', render: (_: any, r: any) => `${r.village}, ${r.tehsil}` },
+            { key: 'disputeType', label: 'Dispute Category', render: (v: string) => <StatusBadge status={v} variant="error" /> },
+            {
+              key: 'parties',
+              label: 'Applicant vs Respondent',
+              render: (_: any, r: any) => (
+                <div>
+                  <div className="font-semibold text-slate-900">{r.applicant?.name || 'Petitioner'}</div>
+                  <div className="text-[11px] text-slate-500">vs. {r.respondent?.name || 'Respondent'}</div>
+                </div>
+              ),
+            },
+            {
+              key: 'scheduledDate',
+              label: 'Scheduled Hearing',
+              render: (_: any, r: any) => r.scheduledDate ? `${r.scheduledDate} (${r.scheduledTime || '11:00 AM'})` : 'Under Scrutiny',
+            },
+            { key: 'status', label: 'Docket Status', render: (v: string) => <StatusBadge status={v || 'Hearing Active'} variant={getStatusVariant(v || 'Hearing')} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'dispute-manage' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Manage Case
+                </button>
+              ),
+            },
+          ],
+          data: [
+            {
+              caseId: 'DISP-MH-2023-8842',
+              khasraNumber: '142/3 (Plot A)',
+              village: 'Hingna',
+              tehsil: 'Nagpur Rural',
+              disputeType: 'Title & Apportionment Dispute',
+              applicant: { name: 'Sh. Rameshwar Lal', relation: 'Elder Brother (50% Share)' },
+              respondent: { name: 'Smt. Geeta Devi & Co-heirs', relation: 'Legal Successors' },
+              presidingOfficer: 'Shri Vikram Singh (Tehsildar)',
+              scheduledDate: '14-Nov-2024',
+              scheduledTime: '11:30 AM',
+              courtStay: 'No Stay Active',
+              claimedAmount: '₹ 47,38,500',
+              status: 'Hearing Scheduled',
+            },
+            {
+              caseId: 'DISP-MH-2023-1104',
+              khasraNumber: '445/1',
+              village: 'Wanadongri',
+              tehsil: 'Nagpur Rural',
+              disputeType: 'Boundary Demarcation Conflict',
+              applicant: { name: 'M/s Sharma Enterprises', relation: 'Adjacent Commercial Plot Owner' },
+              respondent: { name: 'Sh. Suresh Patel', relation: 'Acquired Landowner' },
+              presidingOfficer: 'Shri Vikram Singh (Tehsildar)',
+              scheduledDate: '18-Nov-2024',
+              scheduledTime: '02:00 PM',
+              courtStay: 'Interim Injunction Logged',
+              claimedAmount: '₹ 72,15,000',
+              status: 'High Court Stay',
+            },
+            {
+              caseId: 'DISP-MH-2023-2291',
+              khasraNumber: '448/3',
+              village: 'Karanja',
+              tehsil: 'Nagpur Rural',
+              disputeType: 'Forest Boundary Buffer Contest',
+              applicant: { name: 'Gram Panchayat Karanja', relation: 'Common Village Land Trustee' },
+              respondent: { name: 'Maharashtra Forest Dept', relation: 'Territorial Division' },
+              presidingOfficer: 'Shri Vikram Singh (Tehsildar)',
+              scheduledDate: '22-Nov-2024',
+              scheduledTime: '10:00 AM',
+              courtStay: 'Joint Survey Ordered',
+              claimedAmount: '₹ 98,40,000',
+              status: 'Joint Survey Pending',
+            },
+            {
+              caseId: 'DISP-MH-2023-3840',
+              khasraNumber: '450/2-A',
+              village: 'Butibori',
+              tehsil: 'Nagpur Rural',
+              disputeType: 'Solatium Distribution Rivalry',
+              applicant: { name: 'Sh. Anil G. Deshmukh', relation: 'Mortgage Holder' },
+              respondent: { name: 'Gram Sabha Representatives', relation: 'Beneficiaries' },
+              presidingOfficer: 'Shri Vikram Singh (Tehsildar)',
+              scheduledDate: '28-Nov-2024',
+              scheduledTime: '03:30 PM',
+              courtStay: 'No Stay',
+              claimedAmount: '₹ 1,07,00,000',
+              status: 'Hearing Scheduled',
+            },
+          ],
+        };
+
+      // ==========================================
       // Default Fallback for other modules
       // ==========================================
       default:
@@ -672,6 +785,31 @@ export default function GenericModulePage() {
                   <div className="p-2.5 bg-amber-50 border border-amber-200 rounded text-slate-800">
                     <div><strong>Objection Type:</strong> {selectedRecord.category || 'Valuation Dispute'}</div>
                     <div><strong>Claimant Statement:</strong> {selectedRecord.description || 'Tree valuation not included in initial inventory.'}</div>
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'dispute-manage' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-amber-900 flex justify-between">
+                      <span>Case #{selectedRecord.caseId}</span>
+                      <span>{selectedRecord.status}</span>
+                    </div>
+                    <div><strong>Dispute Category:</strong> {selectedRecord.disputeType}</div>
+                    <div><strong>Survey Plot:</strong> Khasra #{selectedRecord.khasraNumber} ({selectedRecord.village})</div>
+                    <div><strong>Parties:</strong> {selectedRecord.applicant?.name} <em>vs</em> {selectedRecord.respondent?.name}</div>
+                    <div><strong>Compensation at Stake:</strong> {selectedRecord.claimedAmount || '₹ 47.38 Lakh'}</div>
+                    <div><strong>Court Injunction:</strong> {selectedRecord.courtStay || 'None'}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Revenue Court Magistrate Directive / Order:</label>
+                    <textarea
+                      defaultValue={`Summons issued to both parties for digital appearance on ${selectedRecord.scheduledDate || 'next hearing'}. Field revenue patwari instructed to submit demarcation overlay.`}
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
                   </div>
                 </div>
               )}
