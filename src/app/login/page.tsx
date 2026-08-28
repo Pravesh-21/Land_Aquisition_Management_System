@@ -219,57 +219,6 @@ function LoginContent() {
                     Register as Citizen / Landowner
                   </button>
                 </div>
-
-                {/* Hardcoded 6 Actors Official Credentials Quick Login */}
-                <div className="pt-4 border-t border-slate-200">
-                  <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2.5 flex items-center justify-between">
-                    <span>Official Officer Credentials (1-Click Login)</span>
-                    <span className="text-[#FE932C] text-[10px]">Pass: password123</span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {[
-                      { role: 'AGENCY', label: 'Agency (NHAI)', email: 'agency@gov.in', icon: 'domain', color: '#1B365D' },
-                      { role: 'LAO', label: 'LAO Officer', email: 'lao@gov.in', icon: 'person_search', color: '#0072BC' },
-                      { role: 'FOREST', label: 'Forest (DFO)', email: 'forest@gov.in', icon: 'forest', color: '#2E7D32' },
-                      { role: 'COLLECTOR', label: 'Dist. Collector', email: 'collector@gov.in', icon: 'account_balance', color: '#C25E00' },
-                      { role: 'TEHSILDAR', label: 'Tehsildar Court', email: 'tehsildar@gov.in', icon: 'balance', color: '#5E35B1' },
-                      { role: 'CITIZEN', label: 'Citizen Landowner', email: 'citizen@gov.in', icon: 'person', color: '#00838F' },
-                    ].map((actor) => (
-                      <button
-                        key={actor.role}
-                        type="button"
-                        onClick={async () => {
-                          setEmailOrId(actor.email);
-                          setPassword('password123');
-                          setError('');
-                          setLoading(true);
-                          try {
-                            const res = await loginWithBackend(actor.email, 'password123');
-                            if (res.success && res.role) {
-                              setCurrentRole(res.role);
-                              router.push(`/dashboard/${res.role.toLowerCase()}`);
-                            }
-                          } catch {
-                            setLoading(false);
-                          }
-                        }}
-                        className="p-2 border border-slate-200 bg-slate-50 hover:bg-white hover:border-[#0072BC] hover:shadow-sm rounded text-left transition-all group flex flex-col justify-between"
-                      >
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="material-symbols-outlined text-[16px] text-[#0072BC] group-hover:scale-110 transition-transform">
-                            {actor.icon}
-                          </span>
-                          <span className="text-[11px] font-bold text-slate-800 truncate">
-                            {actor.label}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-slate-500 font-mono truncate">
-                          {actor.email}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </form>
             ) : (
               /* CITIZEN REGISTRATION FORM MODE */
