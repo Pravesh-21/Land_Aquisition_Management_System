@@ -1,11 +1,9 @@
 'use client';
 
-import { mockGrievances } from '@/data/mockData';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
 import { Grievance, GrievanceCategory } from '@/types';
 import { useState, useEffect } from 'react';
-
-const GRIEVANCES_STORAGE_KEY = 'bhu_citizen_grievances_list';
+import { getSharedGrievances, saveSharedGrievance } from '@/utils/workflowState';
 
 export default function GrievancesPage() {
   const [category, setCategory] = useState<GrievanceCategory>('Valuation Dispute');
@@ -13,18 +11,17 @@ export default function GrievancesPage() {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
-  const [grievancesList, setGrievancesList] = useState<Grievance[]>(mockGrievances);
+  const [grievancesList, setGrievancesList] = useState<Grievance[]>([]);
 
-  // Restore list from sessionStorage
+  // Restore list from shared storage
+  const loadGrievances = () => {
+    setGrievancesList(getSharedGrievances());
+  };
+
   useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(GRIEVANCES_STORAGE_KEY);
-      if (saved) {
-        setGrievancesList(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.error('Failed to parse grievances from sessionStorage:', e);
-    }
+    loadGrievances();
+    window.addEventListener('bhu_workflow_update', loadGrievances);
+    return () => window.removeEventListener('bhu_workflow_update', loadGrievances);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,15 +42,9 @@ export default function GrievancesPage() {
       filedBy: 'Sh. Rajendra Patel (Landowner)',
     };
 
-    const updated = [newGrievance, ...grievancesList];
+    const updated = saveSharedGrievance(newGrievance);
     setGrievancesList(updated);
-    try {
-      sessionStorage.setItem(GRIEVANCES_STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error('Failed to save grievance:', e);
-    }
-
-    setSubmittedMessage(`Grievance ${newId} submitted successfully to Revenue Court docket.`);
+    setSubmittedMessage(`✓ Objection ${newId} submitted successfully & automatically synchronized to Revenue Court (Tehsildar) docket.`);
     setSubject('');
     setDescription('');
   };
@@ -63,7 +54,7 @@ export default function GrievancesPage() {
       {/* Header */}
       <div className="border-b border-[var(--color-outline-variant)] pb-4">
         <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
-          Citizen Redressal & Objections Portal
+          Citizen Redressal & Objections Portal • Cross-Role Workflow Active
         </div>
         <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Raise Objection & Grievances</h1>
         <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
@@ -89,9 +80,14 @@ export default function GrievancesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: New Grievance Form */}
         <div className="lg:col-span-5 gov-card p-6 space-y-4">
-          <div className="border-b border-[var(--color-outline-variant)] pb-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[var(--color-gov-navy)]">edit_note</span>
-            <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)]">New Grievance Form</h3>
+          <div className="border-b border-[var(--color-outline-variant)] pb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[var(--color-gov-navy)]">edit_note</span>
+              <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)]">New Grievance Form</h3>
+            </div>
+            <span className="px-2 py-0.5 bg-blue-50 text-[#0072BC] font-bold text-[10px] rounded border border-blue-200">
+              Live Tehsildar Link
+            </span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -155,12 +151,12 @@ export default function GrievancesPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setSubject('Tree Valuation Discrepancy in Survey #442/1-A');
-                  setDescription('24 mature teak trees were enumerated as juvenile trees in the initial award notice. Requesting joint physical re-inspection.');
+                  setSubject('Tree & Structure Valuation Recheck for Plot #442/1-A');
+                  setDescription('24 mature teak trees and 1 open borewell were evaluated below circle rates. Requesting joint field inspection with Land Acquisition Officer.');
                 }}
                 className="py-3 bg-white border border-[var(--color-outline-variant)] text-[var(--color-gov-navy)] font-bold uppercase hover:bg-slate-50 transition-colors"
               >
-                Fill Sample
+                Fill Demo Sample
               </button>
               <button
                 type="submit"

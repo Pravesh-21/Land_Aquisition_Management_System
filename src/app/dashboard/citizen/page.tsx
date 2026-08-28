@@ -1,17 +1,33 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ProjectLandMap from '@/components/map/ProjectLandMap';
-import { mockNotifications } from '@/data/mockData';
+import { getCollectorSignedStatus, getLatestCrossRoleAction } from '@/utils/workflowState';
 
 export default function CitizenDashboard() {
+  const [isCollectorSigned, setIsCollectorSigned] = useState(false);
+  const [latestAction, setLatestAction] = useState<{ text: string; timestamp: string } | null>(null);
+
+  const loadData = () => {
+    const status = getCollectorSignedStatus();
+    setIsCollectorSigned(status.isSigned);
+    setLatestAction(getLatestCrossRoleAction());
+  };
+
+  useEffect(() => {
+    loadData();
+    window.addEventListener('bhu_workflow_update', loadData);
+    return () => window.removeEventListener('bhu_workflow_update', loadData);
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="border-b border-[var(--color-outline-variant)] pb-4 flex justify-between items-end">
         <div>
           <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
-            Citizen & Landowner Portal
+            Citizen & Landowner Portal • Cross-Role Synchronized
           </div>
           <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Landowner Acquisition Dashboard</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
@@ -25,6 +41,18 @@ export default function CitizenDashboard() {
           💰 View ₹47.38L Award
         </Link>
       </div>
+
+      {latestAction && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between text-xs text-emerald-950 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-emerald-700">sync</span>
+            <span><strong>Live Revenue Lifecycle Update ({latestAction.timestamp}):</strong> {latestAction.text}</span>
+          </div>
+          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded uppercase">
+            Updated
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Live OpenStreetMap GIS Acquired Area Map */}
@@ -65,14 +93,18 @@ export default function CitizenDashboard() {
                   <div className="text-[11px] font-semibold text-[var(--color-on-surface-variant)] uppercase">ULPIN: IN-MH-440001-A12B</div>
                   <div className="text-[14px] font-bold text-[var(--color-on-surface)] mt-0.5">Plot #442/1-A, Hingna (1.42 Ha)</div>
                 </div>
-                <StatusBadge status="Award Passed" variant="success" />
+                <StatusBadge
+                  status={isCollectorSigned ? 'Gazette Issued & Award Passed' : 'Award Declared'}
+                  variant="success"
+                  icon={isCollectorSigned ? 'verified' : undefined}
+                />
               </div>
               <div className="w-full bg-[var(--color-surface-variant)] h-2 rounded-full overflow-hidden">
-                <div className="bg-[var(--color-land-green)] h-2 rounded-full" style={{ width: '87.5%' }}></div>
+                <div className="bg-[var(--color-land-green)] h-2 rounded-full transition-all duration-500" style={{ width: isCollectorSigned ? '100%' : '87.5%' }}></div>
               </div>
               <div className="flex justify-between text-[11px] text-slate-500 font-medium">
-                <span>Stage 7 of 8 Completed</span>
-                <span className="font-bold text-emerald-800">87.5% Complete</span>
+                <span>{isCollectorSigned ? 'Stage 8 of 8 Completed (Collector Sanctioned)' : 'Stage 7 of 8 Completed'}</span>
+                <span className="font-bold text-emerald-800">{isCollectorSigned ? '100% Complete ✓' : '87.5% Complete'}</span>
               </div>
             </div>
 
@@ -96,9 +128,13 @@ export default function CitizenDashboard() {
           <div className="gov-card p-5 space-y-3">
             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Latest Official Communication</h4>
             <div className="p-3 bg-blue-50 border border-blue-200 rounded text-xs space-y-1">
-              <div className="font-bold text-[#003178]">Section 23 Award Declared</div>
+              <div className="font-bold text-[#003178]">
+                {isCollectorSigned ? 'Section 11/19 Gazette Sanction Received' : 'Section 23 Award Declared'}
+              </div>
               <p className="text-slate-600 text-[11px] leading-relaxed">
-                Direct Benefit Transfer of ₹47,38,500 successfully settled in your Aadhaar-linked SBI Account on 12-Oct-2023.
+                {isCollectorSigned
+                  ? 'Official Gazette Notification e-Signed by District Collector. Compensation entitlement of ₹47,38,500 is approved and ready for bank credit.'
+                  : 'Direct Benefit Transfer of ₹47,38,500 settled in your Aadhaar-linked SBI Account on 12-Oct-2023.'}
               </p>
             </div>
           </div>

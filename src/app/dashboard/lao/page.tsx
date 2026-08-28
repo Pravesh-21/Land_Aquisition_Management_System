@@ -1,15 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import KPICard from '@/components/ui/KPICard';
 import DataGrid from '@/components/ui/DataGrid';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
 import ProjectLandMap from '@/components/map/ProjectLandMap';
 import { mockParcels, formatINR } from '@/data/mockData';
+import { getCollectorSignedStatus, getLatestCrossRoleAction } from '@/utils/workflowState';
 import Link from 'next/link';
 
 export default function LAODashboard() {
   const [activeTab, setActiveTab] = useState<'cases' | 'map' | 'verification' | 'hearings'>('cases');
+  const [isCollectorSigned, setIsCollectorSigned] = useState(false);
+  const [latestAction, setLatestAction] = useState<{ text: string; timestamp: string } | null>(null);
+
+  const loadData = () => {
+    const status = getCollectorSignedStatus();
+    setIsCollectorSigned(status.isSigned);
+    setLatestAction(getLatestCrossRoleAction());
+  };
+
+  useEffect(() => {
+    loadData();
+    window.addEventListener('bhu_workflow_update', loadData);
+    return () => window.removeEventListener('bhu_workflow_update', loadData);
+  }, []);
+
+  const assignedCasesData = mockParcels.map((parcel, idx) => {
+    if (idx === 0 && isCollectorSigned) {
+      return {
+        ...parcel,
+        status: 'Award Sanctioned (Ready for DBT)',
+      };
+    }
+    return parcel;
+  });
 
   const assignedCasesColumns = [
     { key: 'ulpin', label: 'ULPIN / Reference', width: '180px', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
@@ -26,19 +51,40 @@ export default function LAODashboard() {
         </span>
       ),
     },
-    { key: 'status', label: 'Statutory Stage', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+    {
+      key: 'status',
+      label: 'Statutory Stage',
+      render: (v: string, r: any) => {
+        if (r.id === 'P001' && isCollectorSigned) {
+          return <StatusBadge status="Award Sanctioned (Ready for DBT)" variant="success" icon="verified" />;
+        }
+        return <StatusBadge status={v} variant={getStatusVariant(v)} />;
+      },
+    },
     {
       key: 'action',
       label: 'Action',
       align: 'center' as const,
-      render: (_: any, r: any) => (
-        <Link
-          href={`/dashboard/lao/parcel-verification?ulpin=${r.ulpin}`}
-          className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-[var(--color-gov-navy-dark)] transition-colors inline-block"
-        >
-          Verify & Process
-        </Link>
-      ),
+      render: (_: any, r: any) => {
+        if (r.id === 'P001' && isCollectorSigned) {
+          return (
+            <Link
+              href="/dashboard/lao/dbt-disbursement"
+              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded transition-colors inline-block"
+            >
+              💰 Authorize DBT
+            </Link>
+          );
+        }
+        return (
+          <Link
+            href={`/dashboard/lao/parcel-verification?ulpin=${r.ulpin}`}
+            className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-[var(--color-gov-navy-dark)] transition-colors inline-block"
+          >
+            Verify & Process
+          </Link>
+        );
+      },
     },
   ];
 
@@ -57,12 +103,24 @@ export default function LAODashboard() {
         </div>
       </div>
 
+      {latestAction && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between text-xs text-emerald-950 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-emerald-700">sync_alt</span>
+            <span><strong>Cross-Role Handshake ({latestAction.timestamp}):</strong> {latestAction.text}</span>
+          </div>
+          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded uppercase">
+            Handoff Verified
+          </span>
+        </div>
+      )}
+
       {/* KPI Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         <KPICard data={{ label: 'Assigned Parcels', value: '142', subtitle: 'NH-44 Corridor Phase II', color: 'navy', icon: 'folder_open' }} />
         <KPICard data={{ label: 'Pending Field Verification', value: '18', subtitle: 'Requires Surveyor Audit', color: 'ochre', icon: 'explore' }} />
         <KPICard data={{ label: 'Active Section 15 Hearings', value: '7', subtitle: 'Scheduled this week', color: 'tertiary', icon: 'gavel' }} />
-        <KPICard data={{ label: 'Awards Sanctioned', value: '₹ 45.2 Cr', subtitle: 'Collector Approved', color: 'green', icon: 'verified' }} />
+        <KPICard data={{ label: 'Awards Sanctioned', value: isCollectorSigned ? '₹ 49.9 Cr' : '₹ 45.2 Cr', subtitle: isCollectorSigned ? 'Collector Approved Today ✓' : 'Collector Approved', color: 'green', icon: 'verified' }} />
       </div>
 
       {/* Spatial Cadastral Leaflet & OpenStreetMap WebGIS */}
@@ -90,7 +148,7 @@ export default function LAODashboard() {
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
-            📋 Assigned Acquisition Cases ({mockParcels.length})
+            📋 Assigned Acquisition Cases ({assignedCasesData.length})
           </button>
           <button
             onClick={() => setActiveTab('map')}
@@ -127,8 +185,8 @@ export default function LAODashboard() {
         {activeTab === 'cases' && (
           <DataGrid
             columns={assignedCasesColumns}
-            data={mockParcels}
-            totalItems={mockParcels.length}
+            data={assignedCasesData}
+            totalItems={assignedCasesData.length}
             showExport={false}
           />
         )}
@@ -146,71 +204,61 @@ export default function LAODashboard() {
             <ProjectLandMap
               height="480px"
               showLayerControls={true}
+              showAssets={true}
             />
           </div>
         )}
 
         {activeTab === 'verification' && (
           <div className="p-6 space-y-4">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sm font-bold text-slate-800">Parcels Awaiting Physical / Document Sign-off</h3>
-              <Link
-                href="/dashboard/lao/parcel-verification"
-                className="text-xs font-bold text-[#0072BC] hover:underline"
-              >
-                Open Full Verification Pipeline →
-              </Link>
+            <div className="flex justify-between items-center">
+              <h4 className="font-bold text-[var(--color-gov-navy)] text-base">Field Inspection & Spatial Discrepancy Queue</h4>
+              <span className="px-2.5 py-1 bg-amber-100 text-amber-900 text-xs font-bold rounded">18 Parcels Pending Ground Survey</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {mockParcels.slice(0, 3).map((p) => (
-                <div key={p.id} className="p-4 border border-slate-200 rounded bg-slate-50 space-y-2">
-                  <div className="flex justify-between items-start">
-                    <span className="font-mono text-xs font-bold text-[var(--color-gov-navy)]">{p.ulpin}</span>
-                    <StatusBadge status="Needs Review" variant="warning" />
-                  </div>
-                  <div className="text-xs font-bold text-slate-800">{p.ownerName}</div>
-                  <div className="text-[11px] text-slate-500">{p.village}, {p.tehsil} • {p.area} Ha</div>
-                  <div className="pt-2">
-                    <Link
-                      href={`/dashboard/lao/parcel-verification?ulpin=${p.ulpin}`}
-                      className="block w-full py-1.5 text-center bg-white border border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] text-xs font-bold rounded hover:bg-blue-50"
-                    >
-                      Inspect & Verify
-                    </Link>
-                  </div>
+            <div className="space-y-3 text-xs">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded flex justify-between items-center">
+                <div>
+                  <div className="font-bold text-slate-900">Survey Plot #445/1 (Wanadongri)</div>
+                  <div className="text-slate-600">Discrepancy: GIS boundary (2.15 Ha) vs RoR recorded (2.05 Ha). +0.10 Ha variation.</div>
                 </div>
-              ))}
+                <Link href="/dashboard/lao/parcel-verification?ulpin=IN-MH-440001-B04K" className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white font-bold rounded hover:bg-[var(--color-gov-navy-dark)]">
+                  Resolve Boundary
+                </Link>
+              </div>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded flex justify-between items-center">
+                <div>
+                  <div className="font-bold text-slate-900">Survey Plot #448/3 (Karanja Buffer Zone)</div>
+                  <div className="text-slate-600">Discrepancy: Tree enumeration count requires joint inspection with DFO forest guards.</div>
+                </div>
+                <Link href="/dashboard/lao/vegetation" className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white font-bold rounded hover:bg-[var(--color-gov-navy-dark)]">
+                  Inspect Canopy
+                </Link>
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'hearings' && (
           <div className="p-6 space-y-4">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sm font-bold text-slate-800">Upcoming Section 15 Objection Hearings</h3>
-              <Link
-                href="/dashboard/lao/hearing-management"
-                className="text-xs font-bold text-[#0072BC] hover:underline"
-              >
-                Open Hearing Management →
-              </Link>
+            <div className="flex justify-between items-center">
+              <h4 className="font-bold text-[var(--color-gov-navy)] text-base">Section 15 Statutory Objection Hearings Schedule</h4>
+              <span className="px-2.5 py-1 bg-blue-100 text-blue-900 text-xs font-bold rounded">7 Hearings Listed</span>
             </div>
-            <div className="space-y-3">
-              {[
-                { time: 'Tomorrow, 11:00 AM', parcel: 'IN-MH-440001-A12B', owner: 'Sh. Rajendra Patel', issue: 'Tree count enumeration discrepancy on Survey 442' },
-                { time: '30-Aug, 02:30 PM', parcel: 'IN-MH-440001-B04K', owner: 'Smt. Kamla Devi', issue: 'Joint ownership division & compensation split inquiry' },
-              ].map((h, i) => (
-                <div key={i} className="p-3 border border-slate-200 rounded bg-slate-50 flex justify-between items-center text-xs">
-                  <div>
-                    <div className="font-bold text-slate-900">{h.owner} • <span className="font-mono text-[#0072BC]">{h.parcel}</span></div>
-                    <div className="text-slate-600 mt-0.5">{h.issue}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-slate-800">{h.time}</div>
-                    <span className="text-[10px] text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded">Hearing Room 2</span>
-                  </div>
+            <div className="divide-y divide-slate-200 text-xs">
+              <div className="py-3 flex justify-between items-center">
+                <div>
+                  <div className="font-bold text-slate-900">Sh. Rajendra Patel vs NHAI PIU Nagpur (Survey #442/1-A)</div>
+                  <div className="text-slate-500">Subject: Section 29 Standing Asset Tree Valuation Recheck • Time: 14-Nov-2024 (11:30 AM)</div>
                 </div>
-              ))}
+                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded text-[11px]">Notice Served</span>
+              </div>
+              <div className="py-3 flex justify-between items-center">
+                <div>
+                  <div className="font-bold text-slate-900">M/s Sharma Enterprises vs Suresh Patel (Survey #445/1)</div>
+                  <div className="text-slate-500">Subject: Commercial Access Road Demarcation • Time: 18-Nov-2024 (02:00 PM)</div>
+                </div>
+                <span className="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded text-[11px]">Summons Pending</span>
+              </div>
             </div>
           </div>
         )}

@@ -1,23 +1,48 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import KPICard from '@/components/ui/KPICard';
 import DataGrid from '@/components/ui/DataGrid';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
 import ProjectLandMap from '@/components/map/ProjectLandMap';
-import { mockHearings } from '@/data/mockData';
+import { getSharedHearings, getLatestCrossRoleAction } from '@/utils/workflowState';
+import { Hearing } from '@/types';
 import Link from 'next/link';
 
 export default function TehsildarDashboard() {
+  const [hearingsData, setHearingsData] = useState<Hearing[]>([]);
+  const [latestAction, setLatestAction] = useState<{ text: string; timestamp: string } | null>(null);
+
+  const loadData = () => {
+    setHearingsData(getSharedHearings());
+    setLatestAction(getLatestCrossRoleAction());
+  };
+
+  useEffect(() => {
+    loadData();
+    window.addEventListener('bhu_workflow_update', loadData);
+    return () => window.removeEventListener('bhu_workflow_update', loadData);
+  }, []);
+
   const hearingColumns = [
-    { key: 'caseId', label: 'Case ID', width: '130px', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+    { key: 'caseId', label: 'Case ID', width: '150px', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
     { key: 'khasraNumber', label: 'Khasra No.' },
     { key: 'village', label: 'Village / Tehsil', render: (_: any, r: any) => `${r.village}, ${r.tehsil}` },
     { key: 'disputeType', label: 'Dispute Type', render: (v: string) => <StatusBadge status={v} variant="error" /> },
-    { key: 'applicant', label: 'Applicant vs Respondent', render: (_: any, r: any) => <div><div className="font-semibold">{r.applicant.name}</div><div className="text-[11px] text-[var(--color-on-surface-variant)]">vs. {r.respondent.name}</div></div> },
-    { key: 'scheduledDate', label: 'Scheduled Hearing', render: (_: any, r: any) => r.scheduledDate ? `${r.scheduledDate} ${r.scheduledTime}` : 'Not Scheduled' },
+    {
+      key: 'applicant',
+      label: 'Applicant vs Respondent',
+      render: (_: any, r: any) => (
+        <div>
+          <div className="font-semibold text-slate-900">{r.applicant?.name || 'Petitioner'}</div>
+          <div className="text-[11px] text-[var(--color-on-surface-variant)]">vs. {r.respondent?.name || 'Respondent'}</div>
+        </div>
+      ),
+    },
+    { key: 'scheduledDate', label: 'Scheduled Hearing', render: (_: any, r: any) => r.scheduledDate ? `${r.scheduledDate} ${r.scheduledTime || ''}` : 'Not Scheduled' },
     {
       key: 'action', label: 'Action', align: 'center' as const, render: () => (
-        <Link href="/dashboard/tehsildar/hearing-manager" className="px-3 py-1 bg-[var(--color-gov-navy)] text-white text-xs font-semibold uppercase hover:bg-[var(--color-gov-navy-dark)]">
+        <Link href="/dashboard/tehsildar/hearing-manager" className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold uppercase rounded transition-colors">
           Manage Hearing
         </Link>
       )
@@ -39,8 +64,20 @@ export default function TehsildarDashboard() {
         </Link>
       </div>
 
+      {latestAction && (
+        <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between text-xs text-blue-950 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-[#0072BC]">sync_alt</span>
+            <span><strong>Live Pipeline Activity ({latestAction.timestamp}):</strong> {latestAction.text}</span>
+          </div>
+          <span className="px-2 py-0.5 bg-blue-100 text-[#0072BC] font-bold text-[10px] rounded uppercase">
+            Synchronized
+          </span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <KPICard data={{ label: 'Pending Disputes', value: '18', subtitle: '6 Boundary Conflicts', color: 'red', icon: 'gavel' }} />
+        <KPICard data={{ label: 'Pending Disputes', value: String(hearingsData.length), subtitle: 'Direct Citizen & Agency Sync', color: 'red', icon: 'gavel' }} />
         <KPICard data={{ label: 'Hearings Scheduled', value: '5', subtitle: 'This Week', color: 'navy', icon: 'event' }} />
         <KPICard data={{ label: 'Cases Resolved', value: '42', subtitle: 'This Month', color: 'green', icon: 'task_alt' }} />
         <KPICard data={{ label: 'Court Stays Logged', value: '2', subtitle: 'High Court Injunctions', color: 'ochre', icon: 'book' }} />
@@ -61,10 +98,10 @@ export default function TehsildarDashboard() {
       </div>
 
       <DataGrid
-        title="Revenue Court Active Dispute Register"
+        title={`Revenue Court Active Dispute Register (${hearingsData.length} Live Dockets)`}
         columns={hearingColumns}
-        data={mockHearings}
-        totalItems={mockHearings.length}
+        data={hearingsData}
+        totalItems={hearingsData.length}
       />
     </div>
   );

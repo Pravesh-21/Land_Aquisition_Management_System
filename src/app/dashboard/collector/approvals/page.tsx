@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StepTracker from '@/components/ui/StepTracker';
-
-const STORAGE_KEY = 'bhu_collector_section11_signed';
+import { getCollectorSignedStatus, setCollectorSignedStatus } from '@/utils/workflowState';
 
 export default function CollectorApprovalsPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -12,19 +11,26 @@ export default function CollectorApprovalsPage() {
   const [signed, setSigned] = useState(false);
   const [signTimestamp, setSignTimestamp] = useState<string>('');
 
-  // Restore signature state from sessionStorage
-  useEffect(() => {
-    try {
-      const isSigned = sessionStorage.getItem(STORAGE_KEY);
-      if (isSigned === 'true') {
-        setSigned(true);
-        setConsent(true);
-        setOtp(['1', '2', '3', '4', '5', '6']);
-        setSignTimestamp(sessionStorage.getItem(`${STORAGE_KEY}_time`) || new Date().toLocaleString('en-IN'));
-      }
-    } catch (e) {
-      console.error('Failed to read signature state:', e);
+  // Restore signature state from shared workflowState
+  const loadState = () => {
+    const { isSigned, signTime } = getCollectorSignedStatus();
+    if (isSigned) {
+      setSigned(true);
+      setConsent(true);
+      setOtp(['1', '2', '3', '4', '5', '6']);
+      setSignTimestamp(signTime || new Date().toLocaleString('en-IN'));
+    } else {
+      setSigned(false);
+      setConsent(false);
+      setOtp(['', '', '', '', '', '']);
+      setSignTimestamp('');
     }
+  };
+
+  useEffect(() => {
+    loadState();
+    window.addEventListener('bhu_workflow_update', loadState);
+    return () => window.removeEventListener('bhu_workflow_update', loadState);
   }, []);
 
   const handleOtpChange = (index: number, val: string) => {
@@ -51,24 +57,14 @@ export default function CollectorApprovalsPage() {
     });
     setSigned(true);
     setSignTimestamp(timeStr);
-    try {
-      sessionStorage.setItem(STORAGE_KEY, 'true');
-      sessionStorage.setItem(`${STORAGE_KEY}_time`, timeStr);
-    } catch (e) {
-      console.error('Failed to save signature state:', e);
-    }
+    setCollectorSignedStatus(true, timeStr);
   };
 
   const handleReset = () => {
+    setCollectorSignedStatus(false);
     setSigned(false);
     setOtp(['', '', '', '', '', '']);
     setConsent(false);
-    try {
-      sessionStorage.removeItem(STORAGE_KEY);
-      sessionStorage.removeItem(`${STORAGE_KEY}_time`);
-    } catch (e) {
-      console.error('Failed to reset signature state:', e);
-    }
   };
 
   return (
@@ -77,7 +73,7 @@ export default function CollectorApprovalsPage() {
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
           <div className="text-xs font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider mb-1">
-            Ref No: LARR/2024/042-B • Gazette Notification
+            Ref No: LARR/2024/042-B • Gazette Notification • Live Cross-Role Handoff
           </div>
           <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Section 11 Declaration Approval</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
@@ -151,7 +147,7 @@ export default function CollectorApprovalsPage() {
 
           {/* Digital Signature Seal on Document when Signed */}
           {signed && (
-            <div className="p-4 bg-emerald-50 border-2 border-emerald-500 rounded-lg flex items-center justify-between animate-in zoom-in-95 duration-200">
+            <div className="p-4 bg-emerald-50 border-2 border-emerald-500 rounded-lg flex items-center justify-between animate-in zoom-in-95 duration-200 shadow-sm">
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs uppercase tracking-wider">
                   <span className="material-symbols-outlined text-[20px] text-emerald-700">verified</span>
@@ -161,7 +157,7 @@ export default function CollectorApprovalsPage() {
                   Signed by: <strong>Sh. Ramesh Kumar, IAS</strong> (District Collector, Nagpur)
                 </div>
                 <div className="font-mono text-[10px] text-emerald-700">
-                  UIDAI DSC-Aadhaar • Timestamp: {signTimestamp || 'Active Session'}
+                  UIDAI DSC-Aadhaar • Certified: {signTimestamp || 'Active Session'}
                 </div>
               </div>
               <div className="w-12 h-12 rounded-full border-2 border-emerald-600 bg-white flex items-center justify-center font-bold text-emerald-700 text-xs shadow-sm">
@@ -269,14 +265,14 @@ export default function CollectorApprovalsPage() {
               disabled={signed || !consent || otp.join('').length < 6}
               className={`py-3 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
                 signed
-                  ? 'bg-emerald-700 cursor-default'
+                  ? 'bg-emerald-700 cursor-default shadow-md'
                   : consent && otp.join('').length === 6
                   ? 'bg-[var(--color-gov-ochre)] hover:bg-[var(--color-gov-ochre-bright)] cursor-pointer shadow-md'
                   : 'bg-slate-300 cursor-not-allowed'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">{signed ? 'check_circle' : 'draw'}</span>
-              {signed ? 'SIGNED & ISSUED ✓' : 'SIGN & ISSUE'}
+              {signed ? 'SIGNED & SANCTIONED ✓' : 'SIGN & ISSUE'}
             </button>
           </div>
         </div>
