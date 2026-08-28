@@ -24,6 +24,13 @@ interface CitizenParcel {
   encumbranceStatus: string;
   acquisitionStage: string;
   statutoryNoticeRef: string;
+  assetCount: {
+    structures: number;
+    trees: number;
+    wells: number;
+    total: number;
+    details: string;
+  };
 }
 
 const CITIZEN_PARCELS: CitizenParcel[] = [
@@ -47,6 +54,13 @@ const CITIZEN_PARCELS: CitizenParcel[] = [
     encumbranceStatus: 'Clean Title (No Bank Mortgage)',
     acquisitionStage: 'Award Declared (Section 23)',
     statutoryNoticeRef: 'GAZ-SEC19-2023-0891',
+    assetCount: {
+      structures: 1,
+      trees: 24,
+      wells: 1,
+      total: 26,
+      details: '1 Pucca Residential House (120 sqm), 24 Fruit-bearing Teak & Mango trees, 1 Open Borewell (180ft)',
+    },
   },
   {
     id: 'P-443-C',
@@ -68,6 +82,13 @@ const CITIZEN_PARCELS: CitizenParcel[] = [
     encumbranceStatus: 'Clean Title',
     acquisitionStage: 'Section 19 Declaration Published',
     statutoryNoticeRef: 'GAZ-SEC19-2023-0892',
+    assetCount: {
+      structures: 1,
+      trees: 12,
+      wells: 0,
+      total: 13,
+      details: '1 Agricultural Storage Shed (45 sqm), 12 Neem & Guava trees',
+    },
   },
 ];
 
@@ -80,11 +101,11 @@ export default function CitizenLandRecordsPage() {
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
           <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
-            Verified Land Title Records
+            Verified Land Title & Asset Inventory
           </div>
           <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">My Registered Land Parcels</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Official revenue land records and acquisition status linked to your verified Aadhaar / RoR identity.
+            Official revenue land records, standing asset counts, and acquisition status linked to your verified RoR identity.
           </p>
         </div>
         <Link
@@ -95,12 +116,18 @@ export default function CitizenLandRecordsPage() {
         </Link>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {/* Summary Stats with Total Asset Count */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         <div className="gov-card p-5 border-l-4 border-l-[var(--color-gov-navy)]">
           <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Acquired Area</div>
           <div className="text-[28px] font-bold text-[var(--color-gov-navy)] mt-1">2.07 Ha</div>
-          <div className="text-xs text-slate-600 mt-0.5">5.12 Acres across 2 Survey Plots</div>
+          <div className="text-xs text-slate-600 mt-0.5">5.12 Acres across 2 Plots</div>
+        </div>
+
+        <div className="gov-card p-5 border-l-4 border-l-amber-500">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Standing Assets Enumerated</div>
+          <div className="text-[28px] font-bold text-amber-900 mt-1">39 Assets</div>
+          <div className="text-xs text-slate-600 mt-0.5">2 Structures, 36 Trees, 1 Well</div>
         </div>
 
         <div className="gov-card p-5 border-l-4 border-l-[var(--color-land-green)]">
@@ -130,7 +157,7 @@ export default function CitizenLandRecordsPage() {
                 <th className="p-3">ULPIN / Survey No.</th>
                 <th className="p-3">Village & Sub-Division</th>
                 <th className="p-3">Acquired Area</th>
-                <th className="p-3">Land Classification</th>
+                <th className="p-3">Standing Asset Count</th>
                 <th className="p-3">Ownership Share</th>
                 <th className="p-3">Status</th>
                 <th className="p-3 text-center">Action</th>
@@ -151,7 +178,14 @@ export default function CitizenLandRecordsPage() {
                     <div>{parcel.areaHectares} Ha</div>
                     <div className="text-[11px] text-slate-500">({parcel.areaAcres} Acres)</div>
                   </td>
-                  <td className="p-3 text-slate-700">{parcel.landCategory}</td>
+                  <td className="p-3">
+                    <span className="px-2 py-1 bg-amber-50 border border-amber-200 text-amber-900 font-bold rounded text-[11px] inline-block">
+                      📦 {parcel.assetCount.total} Assets
+                    </span>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      {parcel.assetCount.structures} Struct, {parcel.assetCount.trees} Trees, {parcel.assetCount.wells} Well
+                    </div>
+                  </td>
                   <td className="p-3 font-semibold text-emerald-800">{parcel.ownershipShare}</td>
                   <td className="p-3">
                     <StatusBadge status={parcel.acquisitionStage} variant="info" />
@@ -177,7 +211,7 @@ export default function CitizenLandRecordsPage() {
           <div className="bg-white rounded max-w-2xl w-full p-6 space-y-5 shadow-2xl border border-slate-300 animate-in fade-in zoom-in duration-150">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <div>
-                <div className="text-xs font-bold text-[#0072BC] uppercase tracking-wider">RoR Certified Land Record</div>
+                <div className="text-xs font-bold text-[#0072BC] uppercase tracking-wider">RoR Certified Land Record & Asset Schedule</div>
                 <h3 className="text-xl font-bold text-slate-900 mt-0.5">
                   Parcel {selectedParcel.ulpin} (Survey #{selectedParcel.surveyNumber})
                 </h3>
@@ -211,15 +245,34 @@ export default function CitizenLandRecordsPage() {
                 <div className="font-bold text-slate-900">{selectedParcel.areaHectares} Hectares ({selectedParcel.areaAcres} Acres)</div>
               </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded space-y-1">
-                <div className="text-slate-500 font-medium">Land Category & Soil Type</div>
-                <div className="font-bold text-slate-900">{selectedParcel.landCategory}</div>
-                <div className="text-[11px] text-slate-500">{selectedParcel.soilClassification}</div>
-              </div>
-
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded space-y-1">
-                <div className="text-slate-500 font-medium">Mutation Registry Number</div>
-                <div className="font-mono font-bold text-slate-900">{selectedParcel.mutationNumber}</div>
+              {/* Asset Count Schedule Card */}
+              <div className="col-span-2 p-3.5 bg-amber-50/80 border border-amber-200 rounded space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-amber-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+                    Section 29 Standing Asset Inventory ({selectedParcel.assetCount.total} Total Assets)
+                  </span>
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded">
+                    Field Survey Verified
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+                  <div className="bg-white p-2 border border-amber-100 rounded">
+                    <div className="font-bold text-slate-900 text-sm">{selectedParcel.assetCount.structures}</div>
+                    <div className="text-[10px] text-slate-500">Houses / Sheds</div>
+                  </div>
+                  <div className="bg-white p-2 border border-amber-100 rounded">
+                    <div className="font-bold text-emerald-800 text-sm">{selectedParcel.assetCount.trees}</div>
+                    <div className="text-[10px] text-slate-500">Fruit & Timber Trees</div>
+                  </div>
+                  <div className="bg-white p-2 border border-amber-100 rounded">
+                    <div className="font-bold text-blue-800 text-sm">{selectedParcel.assetCount.wells}</div>
+                    <div className="text-[10px] text-slate-500">Wells / Borewells</div>
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-700 pt-1">
+                  <strong>Inventory Details:</strong> {selectedParcel.assetCount.details}
+                </div>
               </div>
 
               <div className="col-span-2 p-3 bg-blue-50 border border-blue-200 rounded space-y-1">
@@ -227,12 +280,6 @@ export default function CitizenLandRecordsPage() {
                 <div className="text-slate-800"><strong>Primary Title:</strong> {selectedParcel.primaryOwner} ({selectedParcel.ownershipShare})</div>
                 <div className="text-slate-600"><strong>Co-Owners:</strong> {selectedParcel.coOwners.join(', ')}</div>
                 <div className="text-slate-600"><strong>Encumbrance Check:</strong> {selectedParcel.encumbranceStatus}</div>
-              </div>
-
-              <div className="col-span-2 p-3 bg-amber-50 border border-amber-200 rounded space-y-1">
-                <div className="text-amber-900 font-bold">Acquisition Status & Statutory Reference</div>
-                <div className="text-slate-800"><strong>Current Stage:</strong> {selectedParcel.acquisitionStage}</div>
-                <div className="text-slate-600"><strong>Gazette Declaration Ref:</strong> {selectedParcel.statutoryNoticeRef}</div>
               </div>
             </div>
 

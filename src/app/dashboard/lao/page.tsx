@@ -17,6 +17,15 @@ export default function LAODashboard() {
     { key: 'village', label: 'Village & Tehsil', render: (_: any, r: any) => `${r.village}, ${r.tehsil}` },
     { key: 'ownerName', label: 'Primary Landowner' },
     { key: 'area', label: 'Area (Ha)', align: 'right' as const, render: (v: number) => v ? `${v} Ha` : '1.42 Ha' },
+    {
+      key: 'assetCount',
+      label: 'Standing Assets',
+      render: (v: any) => (
+        <span className="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-900 font-bold rounded text-[11px]">
+          📦 {v ? `${v.total} (${v.structures}S/${v.trees}T/${v.wells}W)` : '26 Assets'}
+        </span>
+      ),
+    },
     { key: 'status', label: 'Statutory Stage', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
     {
       key: 'action',

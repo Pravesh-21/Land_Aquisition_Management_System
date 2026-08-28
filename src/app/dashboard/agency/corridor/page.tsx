@@ -94,6 +94,17 @@ export default function CorridorPage() {
                   <div className="text-slate-700"><strong>Owner:</strong> {selectedParcel.ownerName}</div>
                   <div className="text-slate-600"><strong>Village:</strong> {selectedParcel.village}</div>
                   <div className="text-slate-600"><strong>Acquired Area:</strong> {selectedParcel.areaHa} Hectares</div>
+                  {selectedParcel.assetCount && (
+                    <div className="p-2 bg-white border border-blue-200 rounded my-1 text-[11px] space-y-0.5">
+                      <div className="font-bold text-[var(--color-gov-navy)] flex justify-between">
+                        <span>📦 Standing Asset Count:</span>
+                        <span>{selectedParcel.assetCount.total} Total</span>
+                      </div>
+                      <div className="text-slate-600">
+                        {selectedParcel.assetCount.structures} Structures • {selectedParcel.assetCount.trees} Trees • {selectedParcel.assetCount.wells} Wells
+                      </div>
+                    </div>
+                  )}
                   {selectedParcel.compensationINR && (
                     <div className="text-emerald-800 font-bold"><strong>Est. Award:</strong> {selectedParcel.compensationINR}</div>
                   )}

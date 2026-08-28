@@ -24,7 +24,7 @@ const customPillarIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
-// Sample Cadastral Land Acquisition Polygons around Nagpur-Hyderabad Corridor (MH/Telangana)
+// Sample Cadastral Land Acquisition Polygons with Standing Asset Counts
 export interface ProjectParcelPolygon {
   id: string;
   ulpin: string;
@@ -36,6 +36,12 @@ export interface ProjectParcelPolygon {
   coordinates: [number, number][]; // [Lat, Lng]
   riskLevel?: 'Low' | 'Medium' | 'High';
   compensationINR?: string;
+  assetCount: {
+    structures: number;
+    trees: number;
+    wells: number;
+    total: number;
+  };
 }
 
 export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
@@ -49,6 +55,12 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
     status: 'Award Declared',
     compensationINR: '₹ 47,38,500',
     riskLevel: 'Low',
+    assetCount: {
+      structures: 1, // 1 Residential Pucca House
+      trees: 24,    // 24 Fruit/Timber Trees (Mango, Teak)
+      wells: 1,     // 1 Open Irrigation Well
+      total: 26,
+    },
     coordinates: [
       [21.0850, 79.0200],
       [21.0875, 79.0260],
@@ -66,6 +78,12 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
     status: 'Award Declared',
     compensationINR: '₹ 21,80,000',
     riskLevel: 'Low',
+    assetCount: {
+      structures: 1, // 1 Agri Shed
+      trees: 12,    // 12 Trees
+      wells: 0,
+      total: 13,
+    },
     coordinates: [
       [21.0875, 79.0260],
       [21.0910, 79.0315],
@@ -83,6 +101,12 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
     status: 'Under Survey',
     compensationINR: '₹ 72,15,000',
     riskLevel: 'Medium',
+    assetCount: {
+      structures: 2, // 2 Farm Houses
+      trees: 38,    // 38 Trees
+      wells: 2,     // 2 Borewells
+      total: 42,
+    },
     coordinates: [
       [21.0910, 79.0315],
       [21.0950, 79.0380],
@@ -100,6 +124,12 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
     status: 'Clearance Review',
     compensationINR: '₹ 98,40,000 (NPV)',
     riskLevel: 'High',
+    assetCount: {
+      structures: 0,
+      trees: 1250,  // 1,250 Forest Trees
+      wells: 0,
+      total: 1250,
+    },
     coordinates: [
       [21.0950, 79.0380],
       [21.1010, 79.0465],
@@ -117,6 +147,12 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
     status: 'Possession Taken',
     compensationINR: '₹ 1,07,00,000',
     riskLevel: 'Low',
+    assetCount: {
+      structures: 3, // 1 Community Hall, 2 Sheds
+      trees: 45,    // 45 Trees
+      wells: 1,     // 1 Public Borewell
+      total: 49,
+    },
     coordinates: [
       [21.1010, 79.0465],
       [21.1065, 79.0550],
@@ -344,12 +380,35 @@ export default function CadastralLeafletMap({
                 }}
               >
                 <Popup>
-                  <div className="p-1 space-y-1.5 text-xs">
+                  <div className="p-1 space-y-1.5 text-xs min-w-[200px]">
                     <div className="font-mono font-bold text-[#0072BC]">{parcel.ulpin}</div>
                     <div className="font-bold text-slate-900 text-sm">Survey Plot #{parcel.surveyNumber}</div>
                     <div className="text-slate-700"><strong>Owner:</strong> {parcel.ownerName}</div>
                     <div className="text-slate-600"><strong>Location:</strong> {parcel.village}</div>
                     <div className="text-slate-600"><strong>Acquired Area:</strong> {parcel.areaHa} Hectares</div>
+
+                    {/* Standing Asset Count Breakdown */}
+                    <div className="p-2 bg-slate-50 border border-slate-200 rounded my-1.5 space-y-1">
+                      <div className="text-[10px] font-bold uppercase text-[var(--color-gov-navy)] flex items-center justify-between">
+                        <span>Standing Asset Count</span>
+                        <span className="font-mono text-xs">{parcel.assetCount.total} Total</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 text-[10px] text-slate-700">
+                        <div className="bg-white p-1 rounded border border-slate-100 text-center">
+                          <div className="font-bold text-slate-900">{parcel.assetCount.structures}</div>
+                          <div className="text-[9px] text-slate-500">Structures</div>
+                        </div>
+                        <div className="bg-white p-1 rounded border border-slate-100 text-center">
+                          <div className="font-bold text-emerald-800">{parcel.assetCount.trees}</div>
+                          <div className="text-[9px] text-slate-500">Trees</div>
+                        </div>
+                        <div className="bg-white p-1 rounded border border-slate-100 text-center">
+                          <div className="font-bold text-blue-800">{parcel.assetCount.wells}</div>
+                          <div className="text-[9px] text-slate-500">Wells</div>
+                        </div>
+                      </div>
+                    </div>
+
                     {parcel.compensationINR && (
                       <div className="text-emerald-800 font-bold"><strong>Compensation:</strong> {parcel.compensationINR}</div>
                     )}
@@ -361,8 +420,9 @@ export default function CadastralLeafletMap({
                   </div>
                 </Popup>
                 <Tooltip direction="center" permanent={isSelected}>
-                  <span className="font-bold text-[11px] bg-white/90 px-1 py-0.5 rounded shadow-sm">
-                    Plot #{parcel.surveyNumber} ({parcel.areaHa} Ha)
+                  <span className="font-bold text-[11px] bg-white/90 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
+                    <span>Plot #{parcel.surveyNumber}</span>
+                    <span className="text-[9px] text-slate-500">({parcel.assetCount.total} Assets)</span>
                   </span>
                 </Tooltip>
               </Polygon>
@@ -379,6 +439,7 @@ export default function CadastralLeafletMap({
                 <div className="p-1 text-xs">
                   <div className="font-bold text-[var(--color-gov-navy)]">Selected Plot #{activeParcel.surveyNumber}</div>
                   <div>ULPIN: {activeParcel.ulpin}</div>
+                  <div className="text-slate-600">Assets: {activeParcel.assetCount.total} Items</div>
                 </div>
               </Popup>
             </Marker>

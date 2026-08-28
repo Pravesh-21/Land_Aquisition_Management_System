@@ -68,6 +68,12 @@ export interface LandParcel {
   multiOwner: boolean;
   religiousStructure: boolean;
   status: ParcelStatus;
+  assetCount?: {
+    structures: number;
+    trees: number;
+    wells: number;
+    total: number;
+  };
 }
 
 export type ParcelStatus = 
