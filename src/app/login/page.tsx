@@ -133,7 +133,7 @@ function LoginContent() {
           {/* Centered Circular Emblem Header */}
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
             <div className="w-24 h-24 rounded-full bg-white border-2 border-[#0072BC] shadow-md flex items-center justify-center p-0.5 overflow-hidden">
-              <img src="/logo.png?v=2" alt="Bhu Nirikshan Emblem" className="w-full h-full object-contain rounded-full" />
+              <img src="/logo.png?v=3" alt="Bhu Nirikshan Emblem" className="w-full h-full object-contain rounded-full" />
             </div>
           </div>
 

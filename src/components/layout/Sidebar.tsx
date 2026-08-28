@@ -15,7 +15,7 @@ export default function Sidebar() {
       {/* Branding Header */}
       <div className="px-6 py-4 border-b border-white/20 flex items-center gap-3 flex-shrink-0">
         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-0.5 overflow-hidden border border-amber-400">
-          <img src="/logo.png?v=2" alt="Emblem" className="w-full h-full object-contain rounded-full" />
+          <img src="/logo.png?v=3" alt="Emblem" className="w-full h-full object-contain rounded-full" />
         </div>
         <div className="flex flex-col">
           <span className="font-bold text-[18px] tracking-tight leading-tight">BHU-NIRIKSHAN</span>
