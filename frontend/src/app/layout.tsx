@@ -4,9 +4,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { RoleProvider } from "@/contexts/RoleContext";
 
 export const metadata: Metadata = {
-  title: "BHU-DRISHTI | National Land Acquisition & Management Engine",
+  title: "BHU-NIRIKSHAN | National Land Acquisition & Management Engine",
   description: "Next-Gen Automated Land Acquisition Engine compliant with RFCTLARR Act (2013). Government of India - Ministry of Rural Development.",
-  keywords: "land acquisition, RFCTLARR, BHU-DRISHTI, government portal, India, NHAI, PostGIS, ULPIN",
+  keywords: "land acquisition, RFCTLARR, BHU-NIRIKSHAN, government portal, India, NHAI, PostGIS, ULPIN",
 };
 
 export default function RootLayout({

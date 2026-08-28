@@ -34,6 +34,7 @@ export interface MockUser {
   name: string;
   designation: string;
   department: string;
+  email?: string;
   avatar?: string;
   aadhaar?: string;
 }

@@ -12,11 +12,11 @@ export default function Sidebar() {
     <nav className="bg-[var(--color-gov-navy)] text-white w-[260px] fixed left-0 top-[76px] bottom-0 border-r border-[var(--color-outline-variant)] flex flex-col z-30 overflow-hidden">
       {/* Branding Header */}
       <div className="px-6 py-5 border-b border-white/20 flex items-center gap-3 flex-shrink-0">
-        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-          <span className="material-symbols-outlined text-[var(--color-gov-navy)] text-[24px]">account_balance</span>
+        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-0.5 overflow-hidden border border-amber-400">
+          <img src="/logo.png?v=2" alt="Emblem" className="w-full h-full object-contain rounded-full" />
         </div>
         <div className="flex flex-col">
-          <span className="font-bold text-[18px] tracking-tight leading-tight">BHU-DRISHTI</span>
+          <span className="font-bold text-[18px] tracking-tight leading-tight">BHU-NIRIKSHAN</span>
           <span className="text-[11px] text-white/70 uppercase tracking-widest">Govt. of India</span>
         </div>
       </div>

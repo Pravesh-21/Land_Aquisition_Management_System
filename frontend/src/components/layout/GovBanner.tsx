@@ -3,7 +3,8 @@
 export default function GovBanner() {
   return (
     <div className="gov-banner flex items-center justify-between px-8 w-full z-50 fixed top-0 left-0 right-0">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <img src="/logo.png?v=2" alt="Emblem" className="w-5 h-5 object-contain rounded-full" />
         <span className="text-xs font-medium">Government of India</span>
         <span className="hidden md:inline border-l border-[var(--color-outline-variant)] h-4"></span>
         <span className="hidden md:inline text-xs">Ministry of Rural Development</span>

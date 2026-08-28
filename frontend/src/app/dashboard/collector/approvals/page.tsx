@@ -41,8 +41,8 @@ export default function CollectorApprovalsPage() {
         {/* Gazette Document Viewer (Left 7 Cols) */}
         <div className="lg:col-span-7 gov-card p-8 bg-white border border-[var(--color-outline-variant)] space-y-6 min-h-[600px] text-xs">
           <div className="text-center space-y-2 border-b-2 border-[var(--color-gov-navy)] pb-6">
-            <div className="w-12 h-12 mx-auto bg-slate-100 rounded-full flex items-center justify-center p-1 border border-slate-300">
-              <span className="material-symbols-outlined text-[28px] text-slate-800">account_balance</span>
+            <div className="w-14 h-14 mx-auto rounded-full flex items-center justify-center p-0.5 border border-amber-400 bg-white overflow-hidden shadow-sm">
+              <img src="/logo.png?v=2" alt="Emblem" className="w-full h-full object-contain rounded-full" />
             </div>
             <h2 className="text-[22px] font-bold text-[var(--color-on-surface)] tracking-tight uppercase">
               THE GAZETTE OF INDIA
