@@ -13,7 +13,7 @@ export default function TopBar() {
 
   return (
     <>
-      <header className="bg-[var(--color-surface-card)] border-b border-[var(--color-outline-variant)] h-[56px] sticky top-[76px] z-20 flex justify-between items-center px-6">
+      <header className="bg-[var(--color-surface-card)] border-b border-[var(--color-outline-variant)] h-[56px] sticky top-[32px] z-20 flex justify-between items-center px-6">
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center bg-[var(--color-surface-container-low)] border border-[var(--color-outline-variant)] px-3 py-1.5 focus-within:border-[var(--color-gov-navy)] transition-all">
             <span className="material-symbols-outlined text-[var(--color-outline)] text-[20px]">search</span>

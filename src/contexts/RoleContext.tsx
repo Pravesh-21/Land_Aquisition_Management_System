@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { UserRole, RoleConfig, SidebarItem, MockUser } from '@/types';
 
 // ============================================
@@ -189,10 +190,23 @@ interface RoleContextType {
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [currentRole, setCurrentRole] = useState<UserRole>('AGENCY');
   const [activeSidebarItem, setActiveSidebarItem] = useState<string>('dashboard');
 
-  const roleConfig = ROLE_CONFIGS[currentRole];
+  useEffect(() => {
+    if (pathname) {
+      const segs = pathname.split('/').filter(Boolean);
+      if (segs.length >= 2 && segs[0] === 'dashboard') {
+        const roleFromUrl = segs[1].toUpperCase() as UserRole;
+        if (ROLE_CONFIGS[roleFromUrl]) {
+          setCurrentRole(roleFromUrl);
+        }
+      }
+    }
+  }, [pathname]);
+
+  const roleConfig = ROLE_CONFIGS[currentRole] || ROLE_CONFIGS.AGENCY;
 
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);

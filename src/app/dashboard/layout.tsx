@@ -2,7 +2,6 @@
 
 import AuthGuard from '@/components/auth/AuthGuard';
 import GovBanner from '@/components/layout/GovBanner';
-import RoleSwitcher from '@/components/layout/RoleSwitcher';
 import Sidebar from '@/components/layout/Sidebar';
 import TopBar from '@/components/layout/TopBar';
 import { NotificationProvider } from '@/contexts/NotificationContext';
@@ -14,14 +13,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Government Banner - Fixed Top */}
         <GovBanner />
         
-        {/* Role Switcher - Below Banner */}
-        <RoleSwitcher />
-        
-        {/* Sidebar - Fixed Left */}
+        {/* Sidebar - Fixed Left below GovBanner */}
         <Sidebar />
         
         {/* Main Content Area */}
-        <div className="ml-[260px] pt-[76px]">
+        <div className="ml-[260px] pt-[32px]">
           {/* Top Bar */}
           <TopBar />
           

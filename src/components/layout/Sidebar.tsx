@@ -3,15 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRole } from '@/contexts/RoleContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Sidebar() {
   const { roleConfig, activeSidebarItem, setActiveSidebarItem } = useRole();
+  const { logout } = useAuth();
   const pathname = usePathname();
 
   return (
-    <nav className="bg-[var(--color-gov-navy)] text-white w-[260px] fixed left-0 top-[76px] bottom-0 border-r border-[var(--color-outline-variant)] flex flex-col z-30 overflow-hidden">
+    <nav className="bg-[var(--color-gov-navy)] text-white w-[260px] fixed left-0 top-[32px] bottom-0 border-r border-[var(--color-outline-variant)] flex flex-col z-30 overflow-hidden">
       {/* Branding Header */}
-      <div className="px-6 py-5 border-b border-white/20 flex items-center gap-3 flex-shrink-0">
+      <div className="px-6 py-4 border-b border-white/20 flex items-center gap-3 flex-shrink-0">
         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-0.5 overflow-hidden border border-amber-400">
           <img src="/logo.png?v=2" alt="Emblem" className="w-full h-full object-contain rounded-full" />
         </div>
@@ -32,7 +34,7 @@ export default function Sidebar() {
       <div className="px-4 py-3 flex-shrink-0">
         <button className="w-full bg-[var(--color-gov-ochre-bright)] text-[#663500] font-semibold text-xs py-2.5 px-4 flex items-center justify-center gap-2 hover:bg-[var(--color-gov-ochre)] hover:text-white transition-colors uppercase tracking-wider">
           <span className="material-symbols-outlined text-[16px]">add</span>
-          New Department Action
+          New Action
         </button>
       </div>
 
@@ -67,14 +69,14 @@ export default function Sidebar() {
 
       {/* Footer Links */}
       <div className="mt-auto px-3 py-3 border-t border-white/20 space-y-0.5 flex-shrink-0">
-        <a className="flex items-center gap-3 px-3 py-2.5 text-[13px] text-white/70 hover:bg-white/10 transition-colors cursor-pointer">
-          <span className="material-symbols-outlined text-[20px]">help</span>
-          Help Center
-        </a>
-        <a className="flex items-center gap-3 px-3 py-2.5 text-[13px] text-white/70 hover:bg-white/10 transition-colors cursor-pointer">
-          <span className="material-symbols-outlined text-[20px]">logout</span>
+        <Link href={`/dashboard/${roleConfig.id.toLowerCase()}`} className="flex items-center gap-3 px-3 py-2 text-[13px] text-white/70 hover:bg-white/10 transition-colors">
+          <span className="material-symbols-outlined text-[18px]">verified_user</span>
+          Role: {roleConfig.id}
+        </Link>
+        <Link href="/login" onClick={logout} className="flex items-center gap-3 px-3 py-2 text-[13px] text-red-300 hover:bg-white/10 transition-colors">
+          <span className="material-symbols-outlined text-[18px]">logout</span>
           Sign Out
-        </a>
+        </Link>
       </div>
     </nav>
   );
