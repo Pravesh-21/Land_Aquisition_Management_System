@@ -44,11 +44,11 @@ function LoginContent() {
         setLoading(false);
         router.push(`/dashboard/${res.role.toLowerCase()}`);
       } else {
-        setError('Invalid User ID or Password. Please check your credentials.');
+        setError(res.message || 'Invalid User ID or Password. Please check your credentials.');
         setLoading(false);
       }
     } catch (err) {
-      setError('Backend authentication service unavailable.');
+      setError('Authentication service error. Please check your credentials.');
       setLoading(false);
     }
   };

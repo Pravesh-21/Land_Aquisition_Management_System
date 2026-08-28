@@ -85,7 +85,29 @@ USER_DATABASE: Dict[str, dict] = {
             "email": "agency@gov.in"
         }
     },
+    "agency": {
+        "email": "agency@gov.in",
+        "password": "password123",
+        "role": "AGENCY",
+        "user": {
+            "name": "Sh. Jagdish Deshmukh",
+            "designation": "Project Director",
+            "department": "NHAI - PIU Nagpur",
+            "email": "agency@gov.in"
+        }
+    },
     "lao@gov.in": {
+        "email": "lao@gov.in",
+        "password": "password123",
+        "role": "LAO",
+        "user": {
+            "name": "Smt. Meera Kulkarni",
+            "designation": "Land Acquisition Officer",
+            "department": "Revenue Dept. - Pune Division",
+            "email": "lao@gov.in"
+        }
+    },
+    "lao": {
         "email": "lao@gov.in",
         "password": "password123",
         "role": "LAO",
@@ -107,7 +129,29 @@ USER_DATABASE: Dict[str, dict] = {
             "email": "forest@gov.in"
         }
     },
+    "forest": {
+        "email": "forest@gov.in",
+        "password": "password123",
+        "role": "FOREST",
+        "user": {
+            "name": "Dr. Anil Sharma",
+            "designation": "Divisional Forest Officer",
+            "department": "MoEFCC - Western Region",
+            "email": "forest@gov.in"
+        }
+    },
     "collector@gov.in": {
+        "email": "collector@gov.in",
+        "password": "password123",
+        "role": "COLLECTOR",
+        "user": {
+            "name": "Sh. Ramesh Kumar, IAS",
+            "designation": "District Collector",
+            "department": "District Administration - Nagpur",
+            "email": "collector@gov.in"
+        }
+    },
+    "collector": {
         "email": "collector@gov.in",
         "password": "password123",
         "role": "COLLECTOR",
@@ -129,7 +173,30 @@ USER_DATABASE: Dict[str, dict] = {
             "email": "tehsildar@gov.in"
         }
     },
+    "tehsildar": {
+        "email": "tehsildar@gov.in",
+        "password": "password123",
+        "role": "TEHSILDAR",
+        "user": {
+            "name": "Sh. Vikram Singh",
+            "designation": "Tehsildar",
+            "department": "Revenue Court - Sikar Tehsil",
+            "email": "tehsildar@gov.in"
+        }
+    },
     "citizen@gov.in": {
+        "email": "citizen@gov.in",
+        "password": "password123",
+        "role": "CITIZEN",
+        "user": {
+            "name": "Sh. Rajendra Patel",
+            "designation": "Landowner",
+            "department": "Citizen G2C",
+            "aadhaar": "XXXX XXXX 4920",
+            "email": "citizen@gov.in"
+        }
+    },
+    "citizen": {
         "email": "citizen@gov.in",
         "password": "password123",
         "role": "CITIZEN",
@@ -170,7 +237,7 @@ def register_user(req: RegisterRequest):
     valid_roles = ["AGENCY", "LAO", "FOREST", "COLLECTOR", "TEHSILDAR", "CITIZEN"]
     assigned_role = req.role.upper().strip()
     if assigned_role not in valid_roles:
-        assigned_role = "AGENCY"
+        assigned_role = "CITIZEN"
 
     user_profile = {
         "name": req.name.strip(),
@@ -198,16 +265,16 @@ def register_user(req: RegisterRequest):
     )
 
 # =========================================================
-# BACKEND LOGIN ENDPOINT (Verifies Credentials from Database)
+# BACKEND LOGIN ENDPOINT (Strict Credential Verification)
 # =========================================================
 @app.post("/api/v1/auth/login", response_model=AuthResponse)
 def login_user(req: LoginRequest):
     identifier = req.email_or_id.strip().lower()
-    provided_password = req.password_or_otp or "password123"
+    provided_password = req.password_or_otp or ""
 
     if identifier in USER_DATABASE:
         record = USER_DATABASE[identifier]
-        if record["password"] == provided_password or provided_password == "password123" or provided_password == "123456":
+        if record["password"] == provided_password:
             return AuthResponse(
                 status="success",
                 message="Authentication successful. User authorized from database.",
@@ -218,41 +285,12 @@ def login_user(req: LoginRequest):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid password provided for this account."
+                detail="Incorrect password for this user account. Please check your password."
             )
 
-    role = "AGENCY"
-    if "lao" in identifier or "revenue" in identifier:
-        role = "LAO"
-    elif "forest" in identifier or "moefcc" in identifier or "env" in identifier:
-        role = "FOREST"
-    elif "collector" in identifier or "ias" in identifier or "district" in identifier:
-        role = "COLLECTOR"
-    elif "tehsildar" in identifier or "court" in identifier:
-        role = "TEHSILDAR"
-    elif identifier.isdigit() or "citizen" in identifier or "aadhaar" in identifier:
-        role = "CITIZEN"
-
-    user_profile = {
-        "name": f"Official ({identifier.split('@')[0].capitalize()})",
-        "designation": f"Authorized {role} Officer",
-        "department": f"{role} Division",
-        "email": identifier
-    }
-
-    USER_DATABASE[identifier] = {
-        "email": identifier,
-        "password": provided_password,
-        "role": role,
-        "user": user_profile
-    }
-
-    return AuthResponse(
-        status="success",
-        message="User identity authorized and registered.",
-        token=f"jwt-token-{role.lower()}-auto",
-        role=role,
-        user=user_profile
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="User account not found. Please verify your User ID / email address."
     )
 
 # --- Feature 10: RFCTLARR Compensation Valuation Engine ---
