@@ -17,13 +17,12 @@ function LoginContent() {
   const [emailOrId, setEmailOrId] = useState('');
   const [password, setPassword] = useState('');
 
-  // Register form state
+  // Register form state (Citizen only)
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regAadhaar, setRegAadhaar] = useState('');
+  const [regDistrict, setRegDistrict] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('AGENCY');
-  const [regDesignation, setRegDesignation] = useState('');
-  const [regDepartment, setRegDepartment] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +53,7 @@ function LoginContent() {
     }
   };
 
-  // Handle Registration -> Save to Backend Database
+  // Handle Citizen Registration -> Save to Database as CITIZEN
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName || !regEmail || !regPassword) {
@@ -64,57 +63,52 @@ function LoginContent() {
     setError('');
     setLoading(true);
 
+    const citizenRole: UserRole = 'CITIZEN';
+    const citizenUser: MockUser = {
+      name: regName.trim(),
+      email: regEmail.trim().toLowerCase(),
+      designation: 'Landowner',
+      department: regDistrict.trim() ? `Landowner (${regDistrict.trim()})` : 'Citizen G2C',
+      aadhaar: regAadhaar.trim() || undefined,
+    };
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register` : '/api/v1/auth/register';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: regName,
-          email: regEmail,
+          name: citizenUser.name,
+          email: citizenUser.email,
           password: regPassword,
-          role: regRole,
-          designation: regDesignation || `${regRole} Official`,
-          department: regDepartment || `${regRole} Division`,
+          role: citizenRole,
+          designation: citizenUser.designation,
+          department: citizenUser.department,
+          aadhaar_or_id: regAadhaar.trim() || null,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         const newUser: MockUser = data.user;
-        await register(newUser, data.role as UserRole);
-        setCurrentRole(data.role as UserRole);
+        await register(newUser, citizenRole);
+        setCurrentRole(citizenRole);
         setLoading(false);
-        router.push(`/dashboard/${(data.role as string).toLowerCase()}`);
+        router.push('/dashboard/citizen');
         return;
       } else {
         const errData = await response.json();
         setError(errData.detail || 'Registration failed.');
       }
     } catch (err) {
-      const newUser: MockUser = {
-        name: regName,
-        email: regEmail,
-        designation: regDesignation || `${regRole} Official`,
-        department: regDepartment || `${regRole} Division`,
-      };
-      await register(newUser, regRole);
-      setCurrentRole(regRole);
+      await register(citizenUser, citizenRole);
+      setCurrentRole(citizenRole);
       setLoading(false);
-      router.push(`/dashboard/${regRole.toLowerCase()}`);
+      router.push('/dashboard/citizen');
       return;
     }
     setLoading(false);
   };
-
-  const roleOptions: { role: UserRole; label: string; org: string }[] = [
-    { role: 'AGENCY', label: 'Requisite Agency Official', org: 'NHAI / Railways / PWD' },
-    { role: 'LAO', label: 'Land Acquisition Officer', org: 'Revenue Department' },
-    { role: 'FOREST', label: 'Forest & Environment Officer', org: 'MoEFCC' },
-    { role: 'COLLECTOR', label: 'District Collector', org: 'District Administration' },
-    { role: 'TEHSILDAR', label: 'Tehsildar / Revenue Court', org: 'Tehsil Revenue Court' },
-    { role: 'CITIZEN', label: 'Landowner / Citizen G2C', org: 'Aadhaar e-KYC Single Window' },
-  ];
 
   return (
     <div className="min-h-screen bg-[#F0F6FE] flex flex-col justify-between font-sans">
@@ -134,7 +128,7 @@ function LoginContent() {
 
       {/* Main Container - Centered MCA / MyGov Style Card */}
       <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-[560px] relative mt-8">
+        <div className="w-full max-w-[540px] relative mt-8">
           
           {/* Centered Circular Emblem Header */}
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
@@ -148,10 +142,13 @@ function LoginContent() {
             
             {/* Title Section */}
             <div className="text-center space-y-1">
-              <h1 className="text-[24px] font-bold text-[#1B365D] tracking-tight">
-                BHU-NIRIKSHAN User Login / Registration
+              <h1 className="text-[22px] font-bold text-[#1B365D] tracking-tight">
+                {mode === 'login' ? 'BHU-NIRIKSHAN User Login' : 'Citizen / Landowner Registration'}
               </h1>
-              <div className="w-28 h-[3px] bg-[#FE932C] mx-auto rounded-full mt-2"></div>
+              <p className="text-xs text-slate-500 font-medium">
+                {mode === 'login' ? 'Official Government Portal & Single Window System' : 'Public e-KYC & Land Record Tracking Single Window'}
+              </p>
+              <div className="w-24 h-[3px] bg-[#FE932C] mx-auto rounded-full mt-2"></div>
             </div>
 
             {error && (
@@ -168,11 +165,11 @@ function LoginContent() {
                     User ID
                   </label>
                   <div className="text-[11px] text-slate-500 mb-1">
-                    (Official Email ID for Officers, or Aadhaar Number for Citizens)
+                    (Official Email ID for Officers, or Aadhaar / Email for Citizens)
                   </div>
                   <input
                     type="text"
-                    placeholder="Enter User ID or Official Email"
+                    placeholder="Enter User ID or Email"
                     value={emailOrId}
                     onChange={(e) => setEmailOrId(e.target.value)}
                     className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-[#0072BC] focus:outline-none transition-colors"
@@ -204,12 +201,12 @@ function LoginContent() {
                   </div>
                 </div>
 
-                {/* Primary Action Buttons (MCA Style) */}
+                {/* Primary Action Buttons */}
                 <div className="space-y-3 pt-3">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[#0072BC] hover:bg-[#005c99] text-white font-bold text-sm rounded transition-colors shadow-sm uppercase tracking-wide"
+                    className="w-full py-3 bg-[#0072BC] hover:bg-[#005c99] text-white font-bold text-sm rounded transition-colors shadow-sm uppercase tracking-wide cursor-pointer"
                   >
                     {loading ? 'Authenticating...' : 'Login'}
                   </button>
@@ -217,22 +214,22 @@ function LoginContent() {
                   <button
                     type="button"
                     onClick={() => { setMode('register'); setError(''); }}
-                    className="w-full py-3 bg-white border-2 border-[#0072BC] text-[#0072BC] hover:bg-blue-50 font-bold text-sm rounded transition-colors uppercase tracking-wide"
+                    className="w-full py-3 bg-white border-2 border-[#0072BC] text-[#0072BC] hover:bg-blue-50 font-bold text-sm rounded transition-colors uppercase tracking-wide cursor-pointer"
                   >
-                    Register
+                    Register as Citizen / Landowner
                   </button>
                 </div>
               </form>
             ) : (
-              /* REGISTRATION FORM MODE */
+              /* CITIZEN REGISTRATION FORM MODE */
               <form onSubmit={handleRegister} className="space-y-4 text-sm pt-2">
                 <div className="space-y-1">
                   <label className="block text-xs font-semibold text-slate-700">
-                    Full Name *
+                    Full Name (as per Aadhaar / Land Record) *
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="e.g. Sh. Rajendra Patel"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                     className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
@@ -242,11 +239,11 @@ function LoginContent() {
 
                 <div className="space-y-1">
                   <label className="block text-xs font-semibold text-slate-700">
-                    User ID / Email Address *
+                    Email Address *
                   </label>
                   <input
                     type="email"
-                    placeholder="e.g. officer@revenue.gov.in"
+                    placeholder="e.g. rajendra.patel@gmail.com"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
@@ -254,9 +251,37 @@ function LoginContent() {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Aadhaar Number / ID
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="XXXX XXXX 4920"
+                      value={regAadhaar}
+                      onChange={(e) => setRegAadhaar(e.target.value)}
+                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Tehsil / District
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Nagpur Division"
+                      value={regDistrict}
+                      onChange={(e) => setRegDistrict(e.target.value)}
+                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <label className="block text-xs font-semibold text-slate-700">
-                    Password *
+                    Create Password *
                   </label>
                   <input
                     type="password"
@@ -268,65 +293,20 @@ function LoginContent() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    User Role / Designation *
-                  </label>
-                  <select
-                    value={regRole}
-                    onChange={(e) => setRegRole(e.target.value as UserRole)}
-                    className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm font-medium focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                  >
-                    {roleOptions.map((opt) => (
-                      <option key={opt.role} value={opt.role}>
-                        {opt.label} ({opt.org})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Designation Title
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Collector"
-                      value={regDesignation}
-                      onChange={(e) => setRegDesignation(e.target.value)}
-                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-xs focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Department / District
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Nagpur Division"
-                      value={regDepartment}
-                      onChange={(e) => setRegDepartment(e.target.value)}
-                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-xs focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
                 {/* Primary Registration Buttons */}
                 <div className="space-y-3 pt-3">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[#0072BC] hover:bg-[#005c99] text-white font-bold text-sm rounded transition-colors shadow-sm uppercase tracking-wide"
+                    className="w-full py-3 bg-[#0072BC] hover:bg-[#005c99] text-white font-bold text-sm rounded transition-colors shadow-sm uppercase tracking-wide cursor-pointer"
                   >
-                    {loading ? 'Creating User Account...' : 'Complete Registration'}
+                    {loading ? 'Creating Citizen Account...' : 'Complete Citizen Registration'}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => { setMode('login'); setError(''); }}
-                    className="w-full py-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-sm rounded transition-colors uppercase tracking-wide"
+                    className="w-full py-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-sm rounded transition-colors uppercase tracking-wide cursor-pointer"
                   >
                     Back to Login
                   </button>
