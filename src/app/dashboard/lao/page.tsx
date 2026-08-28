@@ -65,6 +65,20 @@ export default function LAODashboard() {
         <KPICard data={{ label: 'Awards Sanctioned', value: '₹ 45.2 Cr', subtitle: 'Collector Approved', color: 'green', icon: 'verified' }} />
       </div>
 
+      {/* Spatial Cadastral Leaflet & OpenStreetMap WebGIS */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[20px] text-[#0072BC]">map</span>
+            Acquisition Corridor Cadastral Map & Standing Assets (Leaflet & OpenStreetMap)
+          </h3>
+          <div className="text-xs text-slate-500 font-medium">
+            Section 29 Standing Assets (Structures, Trees, Wells) Visualized
+          </div>
+        </div>
+        <ProjectLandMap height="460px" showLayerControls={true} showAssets={true} />
+      </div>
+
       {/* Tab Navigation for Docket */}
       <div className="gov-card overflow-hidden">
         <div className="flex border-b border-slate-200 bg-slate-50 flex-wrap">

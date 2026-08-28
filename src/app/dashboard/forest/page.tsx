@@ -3,6 +3,7 @@
 import KPICard from '@/components/ui/KPICard';
 import DataGrid from '@/components/ui/DataGrid';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
+import ProjectLandMap from '@/components/map/ProjectLandMap';
 import { mockForestClearances, formatINR } from '@/data/mockData';
 import Link from 'next/link';
 
@@ -40,7 +41,7 @@ export default function ForestDashboard() {
           </div>
           <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Forest & Environment Clearance Dashboard</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Ecological boundary overlap verification, Stage I/II Forest Clearance NOC pipeline, & Net Present Value (NPV) calculation under Forest (Conservation) Act.
+            Ecological boundary overlap verification, tree inventory counting, and spatial GIS corridor clearance tracking under the Forest Conservation Act.
           </p>
         </div>
       </div>
@@ -53,13 +54,26 @@ export default function ForestDashboard() {
         <KPICard data={{ label: 'Total Calculated NPV', value: '₹ 142.5 Cr', subtitle: 'Per MoEFCC Rates', color: 'green', icon: 'currency_rupee' }} />
       </div>
 
+      {/* Spatial Forest Intersection & Cadastral OpenStreetMap GIS */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[20px] text-emerald-800">forest</span>
+            Forest Sanctuary & Project Intersection Spatial GIS Map (OpenStreetMap)
+          </h3>
+          <div className="text-xs text-slate-500 font-medium">
+            Standing Tree Counts & Eco-Sensitive Polygons Visualized
+          </div>
+        </div>
+        <ProjectLandMap height="480px" showLayerControls={true} showAssets={true} />
+      </div>
+
       {/* Clearances Table */}
       <DataGrid
         title="Forest Clearance Proposals (MoEFCC PARIVESH Sync)"
         columns={clearanceColumns}
         data={mockForestClearances}
         totalItems={mockForestClearances.length}
-        showExport={false}
       />
     </div>
   );

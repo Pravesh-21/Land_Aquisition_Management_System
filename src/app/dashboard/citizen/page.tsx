@@ -46,6 +46,7 @@ export default function CitizenDashboard() {
             height="420px"
             selectedUlpin="IN-MH-440001-A12B"
             showLayerControls={true}
+            showAssets={false}
           />
         </div>
 

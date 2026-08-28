@@ -3,6 +3,7 @@
 import KPICard from '@/components/ui/KPICard';
 import DataGrid from '@/components/ui/DataGrid';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
+import ProjectLandMap from '@/components/map/ProjectLandMap';
 import { mockHearings } from '@/data/mockData';
 import Link from 'next/link';
 
@@ -29,7 +30,7 @@ export default function TehsildarDashboard() {
         <div>
           <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Revenue Court & Tehsildar Dispute Portal</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Digital hearing scheduler, land boundary dispute resolution, summons dispatch, & court stay log under RFCTLARR Act (2013).
+            Digital hearing scheduler, spatial cadastral boundary verification, standing asset inspection, and court dispute resolution under RFCTLARR Act (2013).
           </p>
         </div>
         <Link href="/dashboard/tehsildar/hearing-manager" className="flex items-center gap-2 px-6 py-3 bg-[var(--color-gov-ochre)] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[var(--color-gov-ochre-bright)] shadow-sm">
@@ -43,6 +44,20 @@ export default function TehsildarDashboard() {
         <KPICard data={{ label: 'Hearings Scheduled', value: '5', subtitle: 'This Week', color: 'navy', icon: 'event' }} />
         <KPICard data={{ label: 'Cases Resolved', value: '42', subtitle: 'This Month', color: 'green', icon: 'task_alt' }} />
         <KPICard data={{ label: 'Court Stays Logged', value: '2', subtitle: 'High Court Injunctions', color: 'ochre', icon: 'book' }} />
+      </div>
+
+      {/* Spatial Revenue Dispute Cadastral OpenStreetMap GIS */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[20px] text-[#0072BC]">gavel</span>
+            Revenue Cadastral & Survey Plot Dispute Map (Leaflet & OpenStreetMap)
+          </h3>
+          <div className="text-xs text-slate-500 font-medium">
+            Standing Asset Schedule & Disputed Polygons Visualized
+          </div>
+        </div>
+        <ProjectLandMap height="480px" showLayerControls={true} showAssets={true} />
       </div>
 
       <DataGrid

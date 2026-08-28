@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polygon, Polyline, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Fix Leaflet Default Marker Icon in Next.js
 const defaultIcon = L.icon({
@@ -179,6 +180,7 @@ interface CadastralMapProps {
   selectedUlpin?: string;
   onParcelSelect?: (parcel: ProjectParcelPolygon) => void;
   showLayerControls?: boolean;
+  showAssets?: boolean; // If false (e.g. for Citizen), asset counts are hidden
 }
 
 function MapViewController({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -194,7 +196,12 @@ export default function CadastralLeafletMap({
   selectedUlpin,
   onParcelSelect,
   showLayerControls = true,
+  showAssets,
 }: CadastralMapProps) {
+  const { role } = useAuth();
+  // If showAssets is explicitly provided, use it; otherwise, hide for CITIZEN and show for all officers
+  const displayAssets = showAssets !== undefined ? showAssets : role !== 'CITIZEN';
+
   const [activeBaseLayer, setActiveBaseLayer] = useState<'osm' | 'satellite' | 'topo'>('osm');
   const [showBuffer, setShowBuffer] = useState<boolean>(true);
   const [showAlignment, setShowAlignment] = useState<boolean>(true);
@@ -311,8 +318,8 @@ export default function CadastralLeafletMap({
               }}
             >
               <Tooltip sticky>
-                <div className="font-bold text-xs">
-                  <div>🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
+                <div className="p-1 text-xs font-bold space-y-0.5">
+                  <div className="text-[#1B365D]">🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
                   <div className="text-amber-800 font-normal">Right-of-Way (RoW) 60m Corridor Buffer</div>
                 </div>
               </Tooltip>
@@ -330,8 +337,8 @@ export default function CadastralLeafletMap({
               }}
             >
               <Tooltip sticky>
-                <div className="font-bold text-xs">
-                  <div>🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
+                <div className="p-1 text-xs font-bold space-y-0.5">
+                  <div className="text-[#1B365D]">🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
                   <div className="text-slate-600 font-normal">Highway Centerline Trajectory</div>
                 </div>
               </Tooltip>
@@ -368,7 +375,7 @@ export default function CadastralLeafletMap({
                   },
                 }}
               >
-                {/* On-Click Popup showing Project Name, Parcel, and Asset Count */}
+                {/* On-Click Popup showing Project Name, Parcel, and (if officer) Asset Count */}
                 <Popup>
                   <div className="p-1.5 space-y-1.5 text-xs min-w-[240px]">
                     {/* Project Header */}
@@ -386,27 +393,29 @@ export default function CadastralLeafletMap({
                     <div className="text-slate-600"><strong>Location:</strong> {parcel.village}</div>
                     <div className="text-slate-600"><strong>Acquired Area:</strong> {parcel.areaHa} Hectares</div>
 
-                    {/* Standing Asset Count Breakdown */}
-                    <div className="p-2 bg-slate-50 border border-slate-200 rounded my-1.5 space-y-1">
-                      <div className="text-[10px] font-bold uppercase text-[var(--color-gov-navy)] flex items-center justify-between">
-                        <span>Section 29 Standing Assets</span>
-                        <span className="font-mono text-xs">{parcel.assetCount.total} Total</span>
+                    {/* Standing Asset Count Breakdown (Hidden for Citizens, Shown for Officers) */}
+                    {displayAssets && (
+                      <div className="p-2 bg-slate-50 border border-slate-200 rounded my-1.5 space-y-1">
+                        <div className="text-[10px] font-bold uppercase text-[var(--color-gov-navy)] flex items-center justify-between">
+                          <span>Section 29 Standing Assets</span>
+                          <span className="font-mono text-xs">{parcel.assetCount.total} Total</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 text-[10px] text-slate-700">
+                          <div className="bg-white p-1 rounded border border-slate-100 text-center">
+                            <div className="font-bold text-slate-900">{parcel.assetCount.structures}</div>
+                            <div className="text-[9px] text-slate-500">Structures</div>
+                          </div>
+                          <div className="bg-white p-1 rounded border border-slate-100 text-center">
+                            <div className="font-bold text-emerald-800">{parcel.assetCount.trees}</div>
+                            <div className="text-[9px] text-slate-500">Trees</div>
+                          </div>
+                          <div className="bg-white p-1 rounded border border-slate-100 text-center">
+                            <div className="font-bold text-blue-800">{parcel.assetCount.wells}</div>
+                            <div className="text-[9px] text-slate-500">Wells</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-3 gap-1 text-[10px] text-slate-700">
-                        <div className="bg-white p-1 rounded border border-slate-100 text-center">
-                          <div className="font-bold text-slate-900">{parcel.assetCount.structures}</div>
-                          <div className="text-[9px] text-slate-500">Structures</div>
-                        </div>
-                        <div className="bg-white p-1 rounded border border-slate-100 text-center">
-                          <div className="font-bold text-emerald-800">{parcel.assetCount.trees}</div>
-                          <div className="text-[9px] text-slate-500">Trees</div>
-                        </div>
-                        <div className="bg-white p-1 rounded border border-slate-100 text-center">
-                          <div className="font-bold text-blue-800">{parcel.assetCount.wells}</div>
-                          <div className="text-[9px] text-slate-500">Wells</div>
-                        </div>
-                      </div>
-                    </div>
+                    )}
 
                     {parcel.compensationINR && (
                       <div className="text-emerald-800 font-bold"><strong>Compensation:</strong> {parcel.compensationINR}</div>
@@ -426,7 +435,10 @@ export default function CadastralLeafletMap({
                       <span>🏗 {parcel.projectName}</span>
                     </div>
                     <div className="text-slate-700 font-medium">
-                      📍 Plot #{parcel.surveyNumber} ({parcel.areaHa} Ha) • <span className="text-amber-800 font-bold">{parcel.assetCount.total} Assets</span>
+                      📍 Plot #{parcel.surveyNumber} ({parcel.areaHa} Ha)
+                      {displayAssets && (
+                        <> • <span className="text-amber-800 font-bold">{parcel.assetCount.total} Assets</span></>
+                      )}
                     </div>
                     <div className="text-[10px] text-slate-500">
                       Owner: {parcel.ownerName} ({parcel.village})
@@ -447,7 +459,10 @@ export default function CadastralLeafletMap({
                 <div className="p-1 text-xs space-y-0.5">
                   <div className="font-bold text-[var(--color-gov-navy)]">{activeParcel.projectName}</div>
                   <div className="font-medium text-slate-800">Plot #{activeParcel.surveyNumber} ({activeParcel.ulpin})</div>
-                  <div className="text-slate-600">Assets: {activeParcel.assetCount.total} Items • {activeParcel.areaHa} Ha</div>
+                  <div className="text-slate-600">Area: {activeParcel.areaHa} Ha</div>
+                  {displayAssets && (
+                    <div className="text-slate-600">Assets: {activeParcel.assetCount.total} Items</div>
+                  )}
                 </div>
               </Popup>
             </Marker>

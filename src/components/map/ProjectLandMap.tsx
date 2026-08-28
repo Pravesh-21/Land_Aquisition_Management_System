@@ -24,6 +24,7 @@ interface ProjectLandMapProps {
   selectedUlpin?: string;
   onParcelSelect?: (parcel: any) => void;
   showLayerControls?: boolean;
+  showAssets?: boolean;
 }
 
 export default function ProjectLandMap(props: ProjectLandMapProps) {

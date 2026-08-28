@@ -3,6 +3,7 @@
 import KPICard from '@/components/ui/KPICard';
 import DataGrid from '@/components/ui/DataGrid';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
+import ProjectLandMap from '@/components/map/ProjectLandMap';
 import { mockProjects, formatINR } from '@/data/mockData';
 import Link from 'next/link';
 
@@ -29,7 +30,7 @@ export default function CollectorDashboard() {
         <div>
           <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">District Collector Executive Dashboard</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Statutory Section 11 & Section 19 Gazette e-Sign authorization, statutory escalation management, & final acquisition sanctioning under RFCTLARR Act (2013).
+            Statutory Section 11 & Section 19 Gazette e-Sign authorization, spatial cadastral parcel oversight, and asset count verification under RFCTLARR Act (2013).
           </p>
         </div>
         <Link href="/dashboard/collector/approvals" className="flex items-center gap-2 px-6 py-3 bg-[var(--color-gov-navy)] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[var(--color-gov-navy-dark)] shadow-sm">
@@ -43,6 +44,20 @@ export default function CollectorDashboard() {
         <KPICard data={{ label: 'Section 11 Pending', value: '3', subtitle: 'Gazette Notifications', color: 'ochre', icon: 'gavel' }} />
         <KPICard data={{ label: 'Section 19 Sanction', value: '2', subtitle: 'Awaiting e-Signature', color: 'red', icon: 'draw' }} />
         <KPICard data={{ label: 'Total Disbursed', value: '₹ 184.2 Cr', subtitle: '100% Solatium included', color: 'green', icon: 'payments' }} />
+      </div>
+
+      {/* Spatial Cadastral Leaflet & OpenStreetMap WebGIS */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[20px] text-[#0072BC]">map</span>
+            District Land Acquisition Spatial Cadastral Map (Leaflet & OpenStreetMap)
+          </h3>
+          <div className="text-xs text-slate-500 font-medium">
+            Standing Assets & Corridor Polygons Visualized
+          </div>
+        </div>
+        <ProjectLandMap height="480px" showLayerControls={true} showAssets={true} />
       </div>
 
       <DataGrid

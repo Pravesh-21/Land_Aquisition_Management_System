@@ -37,6 +37,7 @@ export default function CitizenMapPage() {
             selectedUlpin="IN-MH-440001-A12B"
             onParcelSelect={(p) => setSelectedParcel(p)}
             showLayerControls={true}
+            showAssets={false}
           />
         </div>
 
@@ -55,17 +56,6 @@ export default function CitizenMapPage() {
                   <div className="text-slate-700"><strong>Owner:</strong> {selectedParcel.ownerName}</div>
                   <div className="text-slate-700"><strong>Village:</strong> {selectedParcel.village}</div>
                   <div className="text-slate-700"><strong>Acquired Area:</strong> {selectedParcel.areaHa} Ha</div>
-                  {selectedParcel.assetCount && (
-                    <div className="p-2 bg-white border border-emerald-200 rounded my-1 text-[11px] space-y-0.5">
-                      <div className="font-bold text-emerald-900 flex justify-between">
-                        <span>📦 Standing Assets:</span>
-                        <span>{selectedParcel.assetCount.total} Total</span>
-                      </div>
-                      <div className="text-slate-600">
-                        {selectedParcel.assetCount.structures} Struct • {selectedParcel.assetCount.trees} Trees • {selectedParcel.assetCount.wells} Well
-                      </div>
-                    </div>
-                  )}
                   {selectedParcel.compensationINR && (
                     <div className="text-emerald-800 font-bold text-sm pt-1">
                       Award: {selectedParcel.compensationINR}
