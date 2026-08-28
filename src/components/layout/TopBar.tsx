@@ -7,14 +7,26 @@ import NotificationPanel from '@/components/layout/NotificationPanel';
 import Link from 'next/link';
 
 export default function TopBar() {
-  const { roleConfig } = useRole();
+  const { roleConfig, isSidebarCollapsed, toggleSidebar } = useRole();
   const { user, role, logout } = useAuth();
   const { unreadCount, togglePanel } = useNotifications();
 
   return (
     <>
       <header className="bg-[var(--color-surface-card)] border-b border-[var(--color-outline-variant)] h-[56px] sticky top-[32px] z-20 flex justify-between items-center px-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Sidebar Expand / Collapse Quick Button */}
+          <button
+            onClick={toggleSidebar}
+            className="p-1.5 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] hover:text-[var(--color-gov-navy)] rounded transition-colors flex items-center justify-center cursor-pointer"
+            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            aria-label="Toggle Sidebar"
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              {isSidebarCollapsed ? 'menu_open' : 'menu'}
+            </span>
+          </button>
+
           {role !== 'CITIZEN' && (
             <div className="hidden md:flex items-center bg-[var(--color-surface-container-low)] border border-[var(--color-outline-variant)] px-3 py-1.5 focus-within:border-[var(--color-gov-navy)] transition-all">
               <span className="material-symbols-outlined text-[var(--color-outline)] text-[20px]">search</span>
@@ -49,7 +61,7 @@ export default function TopBar() {
           <button
             id="notif-bell-btn"
             onClick={togglePanel}
-            className="p-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] transition-colors relative"
+            className="p-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] transition-colors relative cursor-pointer"
             title="Notifications"
             aria-label={`${unreadCount} unread notifications`}
           >
@@ -60,58 +72,50 @@ export default function TopBar() {
                   position: 'absolute',
                   top: '4px',
                   right: '4px',
+                  backgroundColor: '#dc2626',
+                  color: '#ffffff',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  lineHeight: '1',
                   minWidth: '16px',
                   height: '16px',
-                  borderRadius: '999px',
-                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
-                  fontSize: '10px',
-                  fontWeight: 700,
+                  borderRadius: '9999px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: '0 3px',
-                  boxShadow: '0 0 6px rgba(239,68,68,0.6)',
-                  animation: 'badge-pulse 2s ease-in-out infinite',
-                  border: '1.5px solid var(--color-surface-card)',
+                  border: '1.5px solid #ffffff',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                  zIndex: 10,
                 }}
               >
-                {unreadCount > 99 ? '99+' : unreadCount}
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
-          <button className="p-2 text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container-low)] transition-colors">
-            <span className="material-symbols-outlined text-[20px]">settings</span>
-          </button>
-          <div className="h-6 w-px bg-[var(--color-outline-variant)]"></div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden md:block">
-              <div className="text-[13px] font-semibold text-[var(--color-on-surface)]">{user?.name || roleConfig.user.name}</div>
-              <div className="text-[11px] text-[var(--color-on-surface-variant)]">{user?.designation || roleConfig.user.designation}</div>
+          {/* User Profile */}
+          <div className="flex items-center gap-2 pl-2">
+            <div className="w-8 h-8 rounded-full bg-[var(--color-gov-navy)] text-white text-xs font-bold flex items-center justify-center">
+              {roleConfig.user.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
             </div>
-            <Link
-              href="/login"
+            <div className="hidden lg:block text-left">
+              <div className="text-xs font-semibold text-[var(--color-on-surface)] leading-tight">{roleConfig.user.name}</div>
+              <div className="text-[10px] text-[var(--color-outline)]">{roleConfig.user.designation}</div>
+            </div>
+            <button
               onClick={logout}
-              className="w-8 h-8 bg-[var(--color-gov-navy)] text-white flex items-center justify-center font-bold text-sm hover:bg-[var(--color-status-error)] transition-colors"
-              title="Sign Out / Switch User Account"
+              className="ml-2 text-xs font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-1 rounded transition-colors cursor-pointer"
+              title="Logout"
             >
-              {(user?.name || roleConfig.user.name).split(' ').map(n => n[0]).join('').slice(0, 2)}
-            </Link>
+              Sign Out
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Notification panel rendered here so it overlays everything */}
+      {/* Notification Dropdown Panel */}
       <NotificationPanel />
-
-      <style>{`
-        @keyframes badge-pulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(239,68,68,0.6); }
-          50% { transform: scale(1.15); box-shadow: 0 0 10px rgba(239,68,68,0.9); }
-        }
-      `}</style>
     </>
   );
 }
