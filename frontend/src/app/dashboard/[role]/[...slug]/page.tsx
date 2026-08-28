@@ -1,11 +1,11 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useRole } from '@/contexts/RoleContext';
-import DataGrid from '@/components/ui/DataGrid';
-import KPICard from '@/components/ui/KPICard';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { mockParcels } from '@/data/mockData';
+import { useRole } from '../../../../contexts/RoleContext';
+import DataGrid from '../../../../components/ui/DataGrid';
+import KPICard from '../../../../components/ui/KPICard';
+import StatusBadge from '../../../../components/ui/StatusBadge';
+import { mockParcels } from '../../../../data/mockData';
 
 export default function GenericModulePage() {
   const pathname = usePathname();
