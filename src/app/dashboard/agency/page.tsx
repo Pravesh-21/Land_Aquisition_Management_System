@@ -3,7 +3,8 @@
 import KPICard from '@/components/ui/KPICard';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
 import DataGrid from '@/components/ui/DataGrid';
-import { mockProjects, mockParcels, formatINR } from '@/data/mockData';
+import ProjectLandMap from '@/components/map/ProjectLandMap';
+import { mockProjects, formatINR } from '@/data/mockData';
 import { KPIData } from '@/types';
 import Link from 'next/link';
 
@@ -32,19 +33,21 @@ export default function AgencyDashboard() {
       {/* Page Header */}
       <div className="flex justify-between items-end border-b border-[var(--color-outline-variant)] pb-5">
         <div>
-          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Requisite Agency Dashboard</h1>
+          <div className="text-xs font-semibold text-[var(--color-gov-navy)] uppercase tracking-wider mb-1">
+            Requisite Agency Single Window
+          </div>
+          <h1 className="text-[28px] font-bold text-[var(--color-gov-navy)]">Project Corridor & Land Requirement Dashboard</h1>
           <p className="text-[14px] text-[var(--color-on-surface-variant)] mt-1">
-            Project corridor management, spatial mapping & land requirement assessment
+            Project corridor management, spatial OpenStreetMap mapping, & land requirement assessment under RFCTLARR Act (2013).
           </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/dashboard/agency/registration" className="flex items-center gap-2 px-5 py-2.5 bg-white border border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] text-xs font-semibold uppercase tracking-wider hover:bg-[var(--color-status-info-bg)] transition-colors">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            New Project
-          </Link>
-          <Link href="/dashboard/agency/corridor" className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-gov-ochre)] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[var(--color-gov-ochre-bright)] transition-colors">
+          <Link
+            href="/dashboard/agency/corridor"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-gov-ochre)] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[var(--color-gov-ochre-bright)] transition-colors"
+          >
             <span className="material-symbols-outlined text-[18px]">route</span>
-            Draw Corridor
+            Open Full WebGIS Editor
           </Link>
         </div>
       </div>
@@ -56,62 +59,34 @@ export default function AgencyDashboard() {
         ))}
       </div>
 
+      {/* Interactive Leaflet WebGIS Map Section */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[var(--color-gov-navy)] text-[22px]">map</span>
+            <h3 className="text-[18px] font-bold text-[var(--color-gov-navy)]">
+              Active Project Corridor & Land Acquisition Polygons (OpenStreetMap)
+            </h3>
+          </div>
+          <span className="text-xs font-semibold text-slate-500">
+            NH-44 Nagpur-Hyderabad Corridor (Phase II)
+          </span>
+        </div>
+
+        <ProjectLandMap
+          height="460px"
+          showLayerControls={true}
+        />
+      </div>
+
       {/* Active Projects Table */}
       <DataGrid
-        title="Active Projects"
+        title="Active Acquisition Projects"
         columns={projectColumns}
         data={mockProjects}
-        totalItems={12}
+        totalItems={mockProjects.length}
+        showExport={false}
       />
-
-      {/* Bottom Grid: Quick Stats + Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Acquisition Pipeline */}
-        <div className="lg:col-span-8 gov-card p-5">
-          <h3 className="text-[16px] font-semibold text-[var(--color-gov-navy)] mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px]">schema</span>
-            Acquisition Pipeline Summary
-          </h3>
-          <div className="grid grid-cols-6 gap-3">
-            {[
-              { label: 'Proposal', count: 5, color: 'bg-[var(--color-status-info-bg)]' },
-              { label: 'SIA', count: 3, color: 'bg-[var(--color-status-warning-bg)]' },
-              { label: 'Sec 11', count: 4, color: 'bg-[var(--color-gov-ochre-light)]' },
-              { label: 'Sec 19', count: 2, color: 'bg-[var(--color-status-success-bg)]' },
-              { label: 'Award', count: 6, color: 'bg-[#E8F5E9]' },
-              { label: 'Possession', count: 8, color: 'bg-[#C8E6C9]' },
-            ].map((stage) => (
-              <div key={stage.label} className={`${stage.color} p-3 border border-[var(--color-outline-variant)] text-center`}>
-                <div className="text-[24px] font-bold text-[var(--color-on-surface)]">{stage.count}</div>
-                <div className="text-[11px] font-medium text-[var(--color-on-surface-variant)] uppercase tracking-wider">{stage.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Escalation Alerts */}
-        <div className="lg:col-span-4 gov-card p-5">
-          <h3 className="text-[16px] font-semibold text-[var(--color-gov-navy)] mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-[var(--color-status-error)]">timer_off</span>
-            Statutory Escalations
-          </h3>
-          <div className="space-y-3">
-            {[
-              { id: 'PRJ-001', label: 'Forest Clearance Pending', days: 22, severity: 'error' as const },
-              { id: 'PRJ-003', label: 'SIA Report Overdue', days: 18, severity: 'error' as const },
-              { id: 'PRJ-005', label: 'Proposal Review Pending', days: 12, severity: 'warning' as const },
-            ].map((alert) => (
-              <div key={alert.id} className="flex items-center justify-between p-3 border border-[var(--color-outline-variant)] bg-[var(--color-surface-container-low)]">
-                <div>
-                  <div className="text-[13px] font-semibold text-[var(--color-on-surface)]">{alert.label}</div>
-                  <div className="text-[11px] text-[var(--color-on-surface-variant)]">{alert.id}</div>
-                </div>
-                <StatusBadge status={`${alert.days} days`} variant={alert.severity} icon="schedule" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

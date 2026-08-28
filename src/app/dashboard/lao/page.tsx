@@ -4,11 +4,12 @@ import { useState } from 'react';
 import KPICard from '@/components/ui/KPICard';
 import DataGrid from '@/components/ui/DataGrid';
 import StatusBadge, { getStatusVariant } from '@/components/ui/StatusBadge';
-import { mockParcels, mockBeneficiaries, formatINR } from '@/data/mockData';
+import ProjectLandMap from '@/components/map/ProjectLandMap';
+import { mockParcels, formatINR } from '@/data/mockData';
 import Link from 'next/link';
 
 export default function LAODashboard() {
-  const [activeTab, setActiveTab] = useState<'cases' | 'verification' | 'hearings'>('cases');
+  const [activeTab, setActiveTab] = useState<'cases' | 'map' | 'verification' | 'hearings'>('cases');
 
   const assignedCasesColumns = [
     { key: 'ulpin', label: 'ULPIN / Reference', width: '180px', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
@@ -57,10 +58,10 @@ export default function LAODashboard() {
 
       {/* Tab Navigation for Docket */}
       <div className="gov-card overflow-hidden">
-        <div className="flex border-b border-slate-200 bg-slate-50">
+        <div className="flex border-b border-slate-200 bg-slate-50 flex-wrap">
           <button
             onClick={() => setActiveTab('cases')}
-            className={`px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
+            className={`px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
               activeTab === 'cases'
                 ? 'border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] bg-white'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -69,8 +70,18 @@ export default function LAODashboard() {
             📋 Assigned Acquisition Cases ({mockParcels.length})
           </button>
           <button
+            onClick={() => setActiveTab('map')}
+            className={`px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
+              activeTab === 'map'
+                ? 'border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] bg-white'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            🗺 OpenStreetMap GIS Cadastral View
+          </button>
+          <button
             onClick={() => setActiveTab('verification')}
-            className={`px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
+            className={`px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
               activeTab === 'verification'
                 ? 'border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] bg-white'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -80,7 +91,7 @@ export default function LAODashboard() {
           </button>
           <button
             onClick={() => setActiveTab('hearings')}
-            className={`px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
+            className={`px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
               activeTab === 'hearings'
                 ? 'border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] bg-white'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -97,6 +108,23 @@ export default function LAODashboard() {
             totalItems={mockParcels.length}
             showExport={false}
           />
+        )}
+
+        {activeTab === 'map' && (
+          <div className="p-5 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Cadastral Survey Layer • NH-44 Alignment & Acquired Plots
+              </span>
+              <span className="text-xs text-slate-500 font-semibold">
+                Click any plot polygon to view statutory details
+              </span>
+            </div>
+            <ProjectLandMap
+              height="480px"
+              showLayerControls={true}
+            />
+          </div>
         )}
 
         {activeTab === 'verification' && (
