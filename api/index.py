@@ -8,6 +8,8 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict
+import uuid
+from datetime import datetime, timedelta
 
 app = FastAPI(
     title="BHU-NIRIKSHAN API Engine",
@@ -316,3 +318,85 @@ def get_satellite_audit(parcel_id: str):
             "health_index": 0.72
         }
     }
+
+
+class Notification(BaseModel):
+    id: str
+    role: str
+    category: str
+    title: str
+    message: str
+    timestamp: str
+    is_read: bool = False
+    priority: str = "NORMAL"
+    action_url: Optional[str] = None
+    icon: str = "notifications"
+
+def _ts(minutes_ago: int) -> str:
+    return (datetime.utcnow() - timedelta(minutes=minutes_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+NOTIFICATIONS_DB: Dict[str, List[dict]] = {
+    "AGENCY": [
+        {"id": str(uuid.uuid4()), "role": "AGENCY", "category": "WORKFLOW", "title": "SIA Report Submitted", "message": "Social Impact Assessment for Project NH-48 Expressway has been submitted by LAO Pune Division. Pending your review.", "timestamp": _ts(8), "is_read": False, "priority": "HIGH", "action_url": "/dashboard/agency/projects", "icon": "account_tree"},
+        {"id": str(uuid.uuid4()), "role": "AGENCY", "category": "ALERT", "title": "Critical Delay - Parcel MH-NG-2041", "message": "Parcel MH-NG-2041 has breached the 45-day statutory deadline. XGBoost Risk Score: 87/100. Immediate escalation recommended.", "timestamp": _ts(22), "is_read": False, "priority": "CRITICAL", "action_url": "/dashboard/agency/parcels", "icon": "warning"},
+        {"id": str(uuid.uuid4()), "role": "AGENCY", "category": "DOCUMENT", "title": "Section 19 Notification Issued", "message": "District Collector Nagpur has issued Section 19 Declaration for NH-48 Phase 3. All landowners notified via CPGRAMS.", "timestamp": _ts(45), "is_read": False, "priority": "NORMAL", "icon": "description"},
+        {"id": str(uuid.uuid4()), "role": "AGENCY", "category": "WORKFLOW", "title": "Forest Clearance Pending", "message": "MoEFCC Stage-II Forest Clearance for 14.2 ha is awaiting DFO signature.", "timestamp": _ts(120), "is_read": True, "priority": "HIGH", "icon": "account_tree"},
+        {"id": str(uuid.uuid4()), "role": "AGENCY", "category": "SYSTEM", "title": "BHU-NIRIKSHAN System Upgraded", "message": "Satellite audit module updated to YOLOv8-OBB v2.1. Improved building detection accuracy to 96.2%.", "timestamp": _ts(240), "is_read": True, "priority": "LOW", "icon": "info"},
+    ],
+    "LAO": [
+        {"id": str(uuid.uuid4()), "role": "LAO", "category": "HEARING", "title": "Section 15 Hearing Tomorrow", "message": "Objection hearing for Parcel RJ-SK-0892 scheduled for tomorrow at 11:00 AM. 3 landowners have confirmed attendance.", "timestamp": _ts(5), "is_read": False, "priority": "HIGH", "action_url": "/dashboard/lao/hearings", "icon": "gavel"},
+        {"id": str(uuid.uuid4()), "role": "LAO", "category": "PAYMENT", "title": "Compensation Award Ready", "message": "RFCTLARR compensation of Rs.47.3 Lakhs calculated for Sh. Rajendra Patel (Parcel MH-NG-1056). Awaiting Collector approval.", "timestamp": _ts(18), "is_read": False, "priority": "HIGH", "action_url": "/dashboard/lao/compensation", "icon": "payments"},
+        {"id": str(uuid.uuid4()), "role": "LAO", "category": "CASE_UPDATE", "title": "4D Award Passed", "message": "Section 23 Award for 7 parcels in NH-48 Phase 2 has been passed by Collector. Proceed with disbursement.", "timestamp": _ts(60), "is_read": False, "priority": "NORMAL", "icon": "update"},
+        {"id": str(uuid.uuid4()), "role": "LAO", "category": "ALERT", "title": "Aadhaar Verification Failed", "message": "Aadhaar seeding failed for 3 landowners in Parcel cluster RJ-SK-0800 to 0810.", "timestamp": _ts(180), "is_read": True, "priority": "HIGH", "icon": "warning"},
+        {"id": str(uuid.uuid4()), "role": "LAO", "category": "SYSTEM", "title": "Data Sync Complete", "message": "DILRMP land records synced successfully. 142 parcels updated with latest ownership data.", "timestamp": _ts(300), "is_read": True, "priority": "LOW", "icon": "info"},
+    ],
+    "FOREST": [
+        {"id": str(uuid.uuid4()), "role": "FOREST", "category": "DOCUMENT", "title": "Forest Land Diversion Request", "message": "AGENCY has submitted Forest Land Diversion request for 14.2 ha under NH-48.", "timestamp": _ts(12), "is_read": False, "priority": "HIGH", "icon": "description"},
+        {"id": str(uuid.uuid4()), "role": "FOREST", "category": "ALERT", "title": "Compensatory Afforestation Due", "message": "Compensatory Afforestation of 28.4 ha (2x) is due within 30 days per FCA 1980 mandate. 0 ha planted so far.", "timestamp": _ts(30), "is_read": False, "priority": "CRITICAL", "icon": "warning"},
+        {"id": str(uuid.uuid4()), "role": "FOREST", "category": "SYSTEM", "title": "MoEFCC Portal Sync", "message": "Parivesh portal data synchronized. 3 pending applications imported.", "timestamp": _ts(200), "is_read": True, "priority": "LOW", "icon": "info"},
+    ],
+    "COLLECTOR": [
+        {"id": str(uuid.uuid4()), "role": "COLLECTOR", "category": "CASE_UPDATE", "title": "Section 23 Award Pending Approval", "message": "LAO Pune has submitted Section 23 Award for 7 parcels totalling Rs.3.2 Cr. Statutory 60-day window expires in 8 days.", "timestamp": _ts(3), "is_read": False, "priority": "CRITICAL", "icon": "update"},
+        {"id": str(uuid.uuid4()), "role": "COLLECTOR", "category": "ALERT", "title": "Court Order Received", "message": "High Court of Bombay has issued stay order on possession of Parcel MH-NG-2041 pending litigation.", "timestamp": _ts(50), "is_read": False, "priority": "CRITICAL", "icon": "warning"},
+        {"id": str(uuid.uuid4()), "role": "COLLECTOR", "category": "SYSTEM", "title": "CPGRAMS Grievance Alert", "message": "5 new CPGRAMS grievances received against land acquisition. Response due within 30 days.", "timestamp": _ts(250), "is_read": True, "priority": "NORMAL", "icon": "info"},
+    ],
+    "TEHSILDAR": [
+        {"id": str(uuid.uuid4()), "role": "TEHSILDAR", "category": "CASE_UPDATE", "title": "New Cases Assigned", "message": "5 new land acquisition cases from Collector's office have been assigned to your docket. Deadline: 15 days.", "timestamp": _ts(10), "is_read": False, "priority": "HIGH", "icon": "update"},
+        {"id": str(uuid.uuid4()), "role": "TEHSILDAR", "category": "HEARING", "title": "Mutation Hearing - RJ-SK-0892", "message": "Mutation hearing for Parcel RJ-SK-0892 confirmed for 10:30 AM.", "timestamp": _ts(20), "is_read": False, "priority": "HIGH", "icon": "gavel"},
+        {"id": str(uuid.uuid4()), "role": "TEHSILDAR", "category": "SYSTEM", "title": "Court Registry Updated", "message": "E-court integration pushed 12 case status updates. All mutation records are now current.", "timestamp": _ts(360), "is_read": True, "priority": "LOW", "icon": "info"},
+    ],
+    "CITIZEN": [
+        {"id": str(uuid.uuid4()), "role": "CITIZEN", "category": "PAYMENT", "title": "Compensation Credited - Rs.47.3 Lakhs", "message": "Your RFCTLARR compensation of Rs.47,38,500 has been credited to your Aadhaar-linked bank account (XXXX 4920). Reference: AWD-2024-1056.", "timestamp": _ts(2), "is_read": False, "priority": "CRITICAL", "icon": "payments"},
+        {"id": str(uuid.uuid4()), "role": "CITIZEN", "category": "HEARING", "title": "Hearing Notice - Section 15", "message": "You are required to appear before LAO Pune Division on 05-Sep-2024 at 11:00 AM regarding your objection.", "timestamp": _ts(15), "is_read": False, "priority": "HIGH", "icon": "gavel"},
+        {"id": str(uuid.uuid4()), "role": "CITIZEN", "category": "CASE_UPDATE", "title": "Section 19 Declaration Published", "message": "The Government has published Section 19 Declaration for your land parcel MH-NG-1056. You have 60 days to file objections.", "timestamp": _ts(48), "is_read": False, "priority": "HIGH", "icon": "update"},
+        {"id": str(uuid.uuid4()), "role": "CITIZEN", "category": "SYSTEM", "title": "Rehabilitation Package Announced", "message": "Government has announced an additional R&R package including house site allotment under Section 31.", "timestamp": _ts(400), "is_read": True, "priority": "NORMAL", "icon": "info"},
+    ],
+}
+
+
+@app.get("/api/v1/notifications/{role}", response_model=List[Notification])
+def get_notifications(role: str, unread_only: bool = False):
+    role_upper = role.upper()
+    notifications = NOTIFICATIONS_DB.get(role_upper, [])
+    if unread_only:
+        notifications = [n for n in notifications if not n["is_read"]]
+    return sorted(notifications, key=lambda x: x["timestamp"], reverse=True)
+
+@app.post("/api/v1/notifications/{role}/read/{notification_id}")
+def mark_notification_read(role: str, notification_id: str):
+    role_upper = role.upper()
+    notifications = NOTIFICATIONS_DB.get(role_upper, [])
+    for notif in notifications:
+        if notif["id"] == notification_id:
+            notif["is_read"] = True
+            return {"status": "success", "message": f"Notification {notification_id} marked as read"}
+    raise HTTPException(status_code=404, detail="Notification not found")
+
+@app.post("/api/v1/notifications/{role}/read-all")
+def mark_all_notifications_read(role: str):
+    role_upper = role.upper()
+    notifications = NOTIFICATIONS_DB.get(role_upper, [])
+    count = sum(1 for n in notifications if not n["is_read"])
+    for notif in notifications:
+        notif["is_read"] = True
+    return {"status": "success", "message": f"{count} notifications marked as read"}
