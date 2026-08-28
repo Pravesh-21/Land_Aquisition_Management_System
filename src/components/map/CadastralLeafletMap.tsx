@@ -24,9 +24,10 @@ const customPillarIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
-// Sample Cadastral Land Acquisition Polygons with Standing Asset Counts
+// Standalone Land Acquisition Polygons (Distinct Separate Sites - No Adjacent Touching)
 export interface ProjectParcelPolygon {
   id: string;
+  projectName: string;
   ulpin: string;
   surveyNumber: string;
   ownerName: string;
@@ -47,10 +48,11 @@ export interface ProjectParcelPolygon {
 export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
   {
     id: 'P-1',
+    projectName: 'NH-44 Nagpur-Hyderabad Corridor (Phase II)',
     ulpin: 'IN-MH-440001-A12B',
     surveyNumber: '442/1-A',
     ownerName: 'Sh. Rajendra Patel',
-    village: 'Hingna, Nagpur',
+    village: 'Hingna Zone, Nagpur',
     areaHa: 1.42,
     status: 'Award Declared',
     compensationINR: '₹ 47,38,500',
@@ -61,42 +63,21 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
       wells: 1,     // 1 Open Irrigation Well
       total: 26,
     },
+    // Standalone Site 1 (South-West Alignment)
     coordinates: [
-      [21.0850, 79.0200],
-      [21.0875, 79.0260],
-      [21.0830, 79.0290],
-      [21.0810, 79.0225],
+      [21.0810, 79.0140],
+      [21.0865, 79.0195],
+      [21.0835, 79.0255],
+      [21.0780, 79.0200],
     ],
   },
   {
     id: 'P-2',
-    ulpin: 'IN-MH-440001-A12C',
-    surveyNumber: '443/2-B',
-    ownerName: 'Sh. Suresh Patel',
-    village: 'Hingna, Nagpur',
-    areaHa: 0.65,
-    status: 'Award Declared',
-    compensationINR: '₹ 21,80,000',
-    riskLevel: 'Low',
-    assetCount: {
-      structures: 1, // 1 Agri Shed
-      trees: 12,    // 12 Trees
-      wells: 0,
-      total: 13,
-    },
-    coordinates: [
-      [21.0875, 79.0260],
-      [21.0910, 79.0315],
-      [21.0870, 79.0350],
-      [21.0830, 79.0290],
-    ],
-  },
-  {
-    id: 'P-3',
+    projectName: 'NH-44 Nagpur-Hyderabad Corridor (Phase II)',
     ulpin: 'IN-MH-440001-B04K',
     surveyNumber: '445/1',
     ownerName: 'Smt. Kamla Devi & Co-owners',
-    village: 'Wanadongri, Nagpur',
+    village: 'Wanadongri Interchange Zone, Nagpur',
     areaHa: 2.15,
     status: 'Under Survey',
     compensationINR: '₹ 72,15,000',
@@ -107,19 +88,21 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
       wells: 2,     // 2 Borewells
       total: 42,
     },
+    // Standalone Site 2 (Mid-Alignment Interchange)
     coordinates: [
-      [21.0910, 79.0315],
-      [21.0950, 79.0380],
-      [21.0915, 79.0420],
-      [21.0870, 79.0350],
+      [21.0930, 79.0330],
+      [21.0980, 79.0385],
+      [21.0950, 79.0445],
+      [21.0900, 79.0390],
     ],
   },
   {
-    id: 'P-4',
+    id: 'P-3',
+    projectName: 'NH-44 Nagpur-Hyderabad Corridor (Phase II)',
     ulpin: 'IN-MH-440001-C09M',
     surveyNumber: '448/3',
     ownerName: 'Maharashtra Forest Dept (Compartment 42-B)',
-    village: 'Karanja Buffer Zone',
+    village: 'Karanja Wildlife Buffer Zone',
     areaHa: 4.80,
     status: 'Clearance Review',
     compensationINR: '₹ 98,40,000 (NPV)',
@@ -130,19 +113,21 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
       wells: 0,
       total: 1250,
     },
+    // Standalone Site 3 (North Forest Eco-Duct Area)
     coordinates: [
-      [21.0950, 79.0380],
-      [21.1010, 79.0465],
-      [21.0965, 79.0515],
-      [21.0915, 79.0420],
+      [21.1050, 79.0520],
+      [21.1110, 79.0585],
+      [21.1070, 79.0665],
+      [21.1010, 79.0600],
     ],
   },
   {
-    id: 'P-5',
+    id: 'P-4',
+    projectName: 'NH-44 Nagpur-Hyderabad Corridor (Phase II)',
     ulpin: 'IN-MH-440001-D15P',
     surveyNumber: '450/2-A',
     ownerName: 'Gram Panchayat Common Land',
-    village: 'Butibori Industrial Area',
+    village: 'Butibori Industrial Hub',
     areaHa: 3.20,
     status: 'Possession Taken',
     compensationINR: '₹ 1,07,00,000',
@@ -153,42 +138,40 @@ export const SAMPLE_PROJECT_PARCELS: ProjectParcelPolygon[] = [
       wells: 1,     // 1 Public Borewell
       total: 49,
     },
+    // Standalone Site 4 (North-East Terminal Area)
     coordinates: [
-      [21.1010, 79.0465],
-      [21.1065, 79.0550],
-      [21.1020, 79.0595],
-      [21.0965, 79.0515],
+      [21.1170, 79.0710],
+      [21.1235, 79.0775],
+      [21.1195, 79.0855],
+      [21.1130, 79.0790],
     ],
   },
 ];
 
 // Corridor Alignment Centerline Coordinates
 export const CORRIDOR_ALIGNMENT_LINE: [number, number][] = [
-  [21.0780, 79.0120],
-  [21.0840, 79.0220],
-  [21.0890, 79.0300],
-  [21.0935, 79.0370],
-  [21.0985, 79.0450],
-  [21.1040, 79.0540],
-  [21.1110, 79.0650],
+  [21.0760, 79.0080],
+  [21.0820, 79.0170],
+  [21.0940, 79.0350],
+  [21.1060, 79.0550],
+  [21.1180, 79.0730],
+  [21.1280, 79.0900],
 ];
 
 // Right-of-Way (RoW) 60-meter Corridor Buffer Polygon
 export const CORRIDOR_BUFFER_POLYGON: [number, number][] = [
-  [21.0795, 79.0105],
-  [21.0855, 79.0205],
-  [21.0905, 79.0285],
-  [21.0950, 79.0355],
-  [21.1000, 79.0435],
-  [21.1055, 79.0525],
-  [21.1125, 79.0635],
-  [21.1095, 79.0665],
-  [21.1025, 79.0555],
-  [21.0970, 79.0465],
-  [21.0920, 79.0385],
-  [21.0875, 79.0315],
-  [21.0825, 79.0235],
-  [21.0765, 79.0135],
+  [21.0775, 79.0065],
+  [21.0835, 79.0155],
+  [21.0955, 79.0335],
+  [21.1075, 79.0535],
+  [21.1195, 79.0715],
+  [21.1295, 79.0885],
+  [21.1265, 79.0915],
+  [21.1165, 79.0745],
+  [21.1045, 79.0565],
+  [21.0925, 79.0365],
+  [21.0805, 79.0185],
+  [21.0745, 79.0095],
 ];
 
 interface CadastralMapProps {
@@ -219,8 +202,8 @@ export default function CadastralLeafletMap({
     SAMPLE_PROJECT_PARCELS.find((p) => p.ulpin === selectedUlpin) || SAMPLE_PROJECT_PARCELS[0]
   );
 
-  const mapCenter: [number, number] = [21.0935, 79.0370];
-  const zoomLevel = 13;
+  const mapCenter: [number, number] = [21.1000, 79.0450];
+  const zoomLevel = 12;
 
   return (
     <div className="relative w-full border border-slate-300 rounded overflow-hidden shadow-sm bg-slate-100 flex flex-col">
@@ -322,13 +305,16 @@ export default function CadastralLeafletMap({
               pathOptions={{
                 color: '#FE932C',
                 fillColor: '#FE932C',
-                fillOpacity: 0.22,
+                fillOpacity: 0.2,
                 weight: 2,
                 dashArray: '5, 5',
               }}
             >
               <Tooltip sticky>
-                <span className="font-bold text-xs">NH-44 Right-of-Way (RoW) 60m Corridor Buffer</span>
+                <div className="font-bold text-xs">
+                  <div>🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
+                  <div className="text-amber-800 font-normal">Right-of-Way (RoW) 60m Corridor Buffer</div>
+                </div>
               </Tooltip>
             </Polygon>
           )}
@@ -344,12 +330,15 @@ export default function CadastralLeafletMap({
               }}
             >
               <Tooltip sticky>
-                <span className="font-bold text-xs">Proposed Highway Alignment Centerline</span>
+                <div className="font-bold text-xs">
+                  <div>🏗 Project: NH-44 Nagpur-Hyderabad Corridor (Phase II)</div>
+                  <div className="text-slate-600 font-normal">Highway Centerline Trajectory</div>
+                </div>
               </Tooltip>
             </Polyline>
           )}
 
-          {/* Selected Land Acquisition Survey Polygons */}
+          {/* Standalone Separate Land Acquisition Polygons */}
           {SAMPLE_PROJECT_PARCELS.map((parcel) => {
             const isSelected = activeParcel?.id === parcel.id;
             const isHighRisk = parcel.riskLevel === 'High';
@@ -369,7 +358,7 @@ export default function CadastralLeafletMap({
                 pathOptions={{
                   color: isSelected ? '#1B365D' : isHighRisk ? '#BA1A1A' : '#2E7D32',
                   fillColor: fillColor,
-                  fillOpacity: isSelected ? 0.6 : 0.4,
+                  fillOpacity: isSelected ? 0.65 : 0.45,
                   weight: isSelected ? 3.5 : 2,
                 }}
                 eventHandlers={{
@@ -379,10 +368,20 @@ export default function CadastralLeafletMap({
                   },
                 }}
               >
+                {/* On-Click Popup showing Project Name, Parcel, and Asset Count */}
                 <Popup>
-                  <div className="p-1 space-y-1.5 text-xs min-w-[200px]">
-                    <div className="font-mono font-bold text-[#0072BC]">{parcel.ulpin}</div>
-                    <div className="font-bold text-slate-900 text-sm">Survey Plot #{parcel.surveyNumber}</div>
+                  <div className="p-1.5 space-y-1.5 text-xs min-w-[240px]">
+                    {/* Project Header */}
+                    <div className="bg-[#1B365D] text-white p-2 rounded -mx-1 -mt-1 space-y-0.5">
+                      <div className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">Acquisition Project</div>
+                      <div className="font-bold text-xs leading-tight">{parcel.projectName}</div>
+                    </div>
+
+                    <div className="pt-1">
+                      <div className="font-mono font-bold text-[#0072BC]">{parcel.ulpin}</div>
+                      <div className="font-bold text-slate-900 text-sm">Survey Plot #{parcel.surveyNumber}</div>
+                    </div>
+
                     <div className="text-slate-700"><strong>Owner:</strong> {parcel.ownerName}</div>
                     <div className="text-slate-600"><strong>Location:</strong> {parcel.village}</div>
                     <div className="text-slate-600"><strong>Acquired Area:</strong> {parcel.areaHa} Hectares</div>
@@ -390,7 +389,7 @@ export default function CadastralLeafletMap({
                     {/* Standing Asset Count Breakdown */}
                     <div className="p-2 bg-slate-50 border border-slate-200 rounded my-1.5 space-y-1">
                       <div className="text-[10px] font-bold uppercase text-[var(--color-gov-navy)] flex items-center justify-between">
-                        <span>Standing Asset Count</span>
+                        <span>Section 29 Standing Assets</span>
                         <span className="font-mono text-xs">{parcel.assetCount.total} Total</span>
                       </div>
                       <div className="grid grid-cols-3 gap-1 text-[10px] text-slate-700">
@@ -419,11 +418,20 @@ export default function CadastralLeafletMap({
                     </div>
                   </div>
                 </Popup>
-                <Tooltip direction="center" permanent={isSelected}>
-                  <span className="font-bold text-[11px] bg-white/90 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1">
-                    <span>Plot #{parcel.surveyNumber}</span>
-                    <span className="text-[9px] text-slate-500">({parcel.assetCount.total} Assets)</span>
-                  </span>
+
+                {/* On-Hover Tooltip pointing Project Name and Parcel */}
+                <Tooltip direction="top" sticky>
+                  <div className="p-1 text-xs space-y-0.5">
+                    <div className="font-bold text-[#1B365D] flex items-center gap-1">
+                      <span>🏗 {parcel.projectName}</span>
+                    </div>
+                    <div className="text-slate-700 font-medium">
+                      📍 Plot #{parcel.surveyNumber} ({parcel.areaHa} Ha) • <span className="text-amber-800 font-bold">{parcel.assetCount.total} Assets</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      Owner: {parcel.ownerName} ({parcel.village})
+                    </div>
+                  </div>
                 </Tooltip>
               </Polygon>
             );
@@ -436,10 +444,10 @@ export default function CadastralLeafletMap({
               icon={customPillarIcon}
             >
               <Popup>
-                <div className="p-1 text-xs">
-                  <div className="font-bold text-[var(--color-gov-navy)]">Selected Plot #{activeParcel.surveyNumber}</div>
-                  <div>ULPIN: {activeParcel.ulpin}</div>
-                  <div className="text-slate-600">Assets: {activeParcel.assetCount.total} Items</div>
+                <div className="p-1 text-xs space-y-0.5">
+                  <div className="font-bold text-[var(--color-gov-navy)]">{activeParcel.projectName}</div>
+                  <div className="font-medium text-slate-800">Plot #{activeParcel.surveyNumber} ({activeParcel.ulpin})</div>
+                  <div className="text-slate-600">Assets: {activeParcel.assetCount.total} Items • {activeParcel.areaHa} Ha</div>
                 </div>
               </Popup>
             </Marker>
