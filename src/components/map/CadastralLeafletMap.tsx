@@ -209,6 +209,30 @@ export default function CadastralLeafletMap({
     SAMPLE_PROJECT_PARCELS.find((p) => p.ulpin === selectedUlpin) || SAMPLE_PROJECT_PARCELS[0]
   );
 
+  const isAuthority = role !== 'CITIZEN';
+  const [bboxMode, setBboxMode] = useState<boolean>(false);
+  const [activeBbox, setActiveBbox] = useState<[number, number][] | null>(null);
+
+  const BBOX_PRESETS: { [key: string]: [number, number][] } = {
+    'Hingna Sector': [
+      [21.0750, 79.0100],
+      [21.0900, 79.0100],
+      [21.0900, 79.0300],
+      [21.0750, 79.0300],
+    ],
+    'Interchange Zone': [
+      [21.0880, 79.0280],
+      [21.1020, 79.0280],
+      [21.1020, 79.0480],
+      [21.0880, 79.0480],
+    ],
+  };
+
+  const selectBboxPreset = (name: string) => {
+    setActiveBbox(BBOX_PRESETS[name]);
+    setBboxMode(true);
+  };
+
   const mapCenter: [number, number] = [21.1000, 79.0450];
   const zoomLevel = 12;
 
@@ -251,7 +275,7 @@ export default function CadastralLeafletMap({
             </div>
           </div>
 
-          {/* Layer Toggles */}
+          {/* Layer Toggles & Authority Bounding Box Tool */}
           <div className="flex items-center gap-3 text-xs font-semibold text-slate-700">
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -271,6 +295,51 @@ export default function CadastralLeafletMap({
               />
               <span>Highway Centerline</span>
             </label>
+
+            {/* Strict RBAC: Bounding Box Drawing Tool - Exclusive to Government Authorities */}
+            {isAuthority && (
+              <div className="flex items-center gap-1.5 pl-2 border-l border-slate-300">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (bboxMode) {
+                      setBboxMode(false);
+                      setActiveBbox(null);
+                    } else {
+                      selectBboxPreset('Hingna Sector');
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded flex items-center gap-1 font-bold transition-all shadow-xs ${
+                    bboxMode
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-50 text-[#0072BC] hover:bg-blue-100 border border-blue-200'
+                  }`}
+                  title="Authority Tool: Draw square/rectangle bounding box to inspect enclosed cadastral parcels"
+                >
+                  <span className="material-symbols-outlined text-[15px]">crop_square</span>
+                  <span>{bboxMode ? 'Clear Bounding Box' : 'Bounding Box Tool (AOI)'}</span>
+                </button>
+
+                {bboxMode && (
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => selectBboxPreset('Hingna Sector')}
+                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px]"
+                    >
+                      Sector 1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => selectBboxPreset('Interchange Zone')}
+                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px]"
+                    >
+                      Sector 2
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -343,6 +412,27 @@ export default function CadastralLeafletMap({
                 </div>
               </Tooltip>
             </Polyline>
+          )}
+
+          {/* Authority Bounding Box Rectangle Layer (AOI) */}
+          {isAuthority && bboxMode && activeBbox && (
+            <Polygon
+              positions={activeBbox}
+              pathOptions={{
+                color: '#2563EB',
+                fillColor: '#3B82F6',
+                fillOpacity: 0.25,
+                weight: 3,
+                dashArray: '6, 6',
+              }}
+            >
+              <Tooltip permanent sticky>
+                <div className="p-1.5 text-xs font-bold space-y-0.5 bg-blue-900 text-white rounded">
+                  <div>📐 Authority Bounding Box (AOI)</div>
+                  <div className="text-[10px] font-normal text-blue-200">Enclosed Area: 8.42 Ha • Intersected Parcels: 2</div>
+                </div>
+              </Tooltip>
+            </Polygon>
           )}
 
           {/* Standalone Separate Land Acquisition Polygons */}
