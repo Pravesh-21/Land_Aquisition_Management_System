@@ -129,7 +129,7 @@ function LoginContent() {
       {/* Main Container - Centered MCA / MyGov Style Card */}
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-[540px] relative mt-8">
-          
+
           {/* Centered Circular Emblem Header */}
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
             <div className="w-24 h-24 rounded-full bg-white border-2 border-[#0072BC] shadow-md flex items-center justify-center p-0.5 overflow-hidden">
@@ -139,14 +139,14 @@ function LoginContent() {
 
           {/* MCA Portal Card Container */}
           <div className="bg-white rounded-t-[36px] rounded-b-[16px] shadow-lg border border-blue-100 pt-16 pb-10 px-10 space-y-6">
-            
+
             {/* Title Section */}
             <div className="text-center space-y-1">
               <h1 className="text-[22px] font-bold text-[#1B365D] tracking-tight">
                 {mode === 'login' ? 'BHU-NIRIKSHAN User Login' : 'Citizen / Landowner Registration'}
               </h1>
               <p className="text-xs text-slate-500 font-medium">
-                {mode === 'login' ? 'Official Government Portal & Single Window System' : 'Public e-KYC & Land Record Tracking Single Window'}
+                Official Government Portal
               </p>
               <div className="w-24 h-[3px] bg-[#FE932C] mx-auto rounded-full mt-2"></div>
             </div>
