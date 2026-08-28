@@ -115,6 +115,12 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       { id: 'hearing-manager', label: 'Hearing Manager', icon: 'gavel', href: '/dashboard/tehsildar/hearing-manager' },
       { id: 'disputes', label: 'Dispute Cases', icon: 'folder_open', href: '/dashboard/tehsildar/disputes' },
       { id: 'affected-persons', label: 'Affected Persons & Disbursement', icon: 'groups', href: '/dashboard/tehsildar/affected-persons' },
+      { id: 'revenue-verification', label: 'Land Record & RoR Verification', icon: 'fact_check', href: '/dashboard/tehsildar/revenue-verification' },
+      { id: 'mutation-tracking', label: 'Mutation Tracking', icon: 'swap_horiz', href: '/dashboard/tehsildar/mutation-tracking' },
+      { id: 'parcels', label: 'Acquisition Parcel Overview', icon: 'landscape', href: '/dashboard/tehsildar/parcels' },
+      { id: 'documents', label: 'Case & Document Records', icon: 'description', href: '/dashboard/tehsildar/documents' },
+      { id: 'alerts', label: 'Pending Actions & Alerts', icon: 'notifications_active', href: '/dashboard/tehsildar/alerts' },
+      { id: 'reports', label: 'Tehsil-Level Reports', icon: 'analytics', href: '/dashboard/tehsildar/reports' },
     ],
   },
   CITIZEN: {

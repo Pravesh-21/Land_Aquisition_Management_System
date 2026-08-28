@@ -646,6 +646,180 @@ export default function GenericModulePage() {
         };
 
       // ==========================================
+      // Tehsildar / Revenue Court Subfeatures (10 Modules)
+      // ==========================================
+      case 'revenue-verification':
+        return {
+          title: 'Land Record & Revenue RoR Verification Gateway',
+          category: 'Revenue Court & Tehsil Office',
+          description: 'Verify 7/12 & Jamabandi Record of Rights (RoR) extracts against DILRMP digitized database. Reconcile recorded ownership tenure, survey plot boundaries, encumbrance history, and flag revenue record anomalies.',
+          kpis: [
+            { label: 'RoRs Verified', value: '124 / 142', subtitle: 'DILRMP Digitized Match', color: 'green', icon: 'fact_check' },
+            { label: 'Title Matches', value: '98.4%', subtitle: 'Single/Joint Ownership', color: 'navy', icon: 'verified' },
+            { label: 'Active Encumbrances', value: '3 Plots', subtitle: 'Bank Mortgage Logged', color: 'ochre', icon: 'account_balance' },
+            { label: 'Discrepancies Flagged', value: '2 Cases', subtitle: 'Requires Patwari Re-survey', color: 'red', icon: 'warning' },
+          ],
+          columns: [
+            { key: 'ulpin', label: 'ULPIN', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'khasraNumber', label: 'Survey / Khasra No.' },
+            { key: 'village', label: 'Revenue Village', render: (_: any, r: any) => `${r.village}, ${r.tehsil}` },
+            { key: 'ownerName', label: 'Recorded Owner in RoR' },
+            { key: 'areaHectares', label: 'RoR Area (Ha)', align: 'right' as const },
+            { key: 'encumbrance', label: 'Encumbrance Status', render: (v: string) => <StatusBadge status={v || 'Nil Encumbrance'} variant={v === 'Bank Mortgage' ? 'warning' : 'success'} /> },
+            { key: 'status', label: 'Revenue Verification', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'tehsildar-ror-verify' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Verify RoR
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { ulpin: 'IN-MH-440001-A12B', khasraNumber: '442/1-A', village: 'Hingna', tehsil: 'Nagpur Rural', ownerName: 'Sh. Rajendra Patel', areaHectares: 1.42, encumbrance: 'Nil Encumbrance (12-Yr Clear)', status: 'Verified' },
+            { ulpin: 'IN-MH-440001-B04K', khasraNumber: '445/1', village: 'Wanadongri', tehsil: 'Nagpur Rural', ownerName: 'Sh. Suresh Patel & Co-heirs', areaHectares: 2.15, encumbrance: 'Joint Shareholding', status: 'Pending Verification' },
+            { ulpin: 'IN-MH-440001-C09L', khasraNumber: '142/3', village: 'Ramgarh', tehsil: 'Nagpur Rural', ownerName: 'Sh. Rameshwar Lal', areaHectares: 1.80, encumbrance: 'Civil Title Contest', status: 'Discrepancy Flagged' },
+            { ulpin: 'IN-MH-440001-D15M', khasraNumber: '450/2-A', village: 'Butibori', tehsil: 'Nagpur Rural', ownerName: 'M/s Sharma Agro Enterprises', areaHectares: 3.20, encumbrance: 'SBI Crop Loan Mortgaged', status: 'Under Review' },
+          ],
+        };
+
+      case 'mutation-tracking':
+        return {
+          title: 'Section 38 Land Acquisition Mutation & Alienation Register',
+          category: 'Revenue Court & Land Records',
+          description: 'Track state revenue code mutation proceedings following 100% compensation disbursement and physical possession handover. Transfer title ownership to the Requisite Agency.',
+          kpis: [
+            { label: 'Mutations Sanctioned', value: '88%', subtitle: 'Transferred to NHAI/Agency', color: 'green', icon: 'swap_horiz' },
+            { label: 'Processing in Tehsil', value: '12%', subtitle: 'Patwari Entry Underway', color: 'ochre', icon: 'pending' },
+            { label: 'Panchnama Certified', value: '112.4 Ha', subtitle: 'Section 38 Possession', color: 'navy', icon: 'verified' },
+            { label: 'Avg Sanction SLA', value: '5.2 Days', subtitle: 'Target: 7 Days', color: 'tertiary', icon: 'schedule' },
+          ],
+          columns: [
+            { key: 'mutationNo', label: 'Mutation Entry No.', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'khasraNumber', label: 'Survey Plot' },
+            { key: 'village', label: 'Revenue Village' },
+            { key: 'formerOwner', label: 'Former Landowner' },
+            { key: 'transferee', label: 'Transferee Agency' },
+            { key: 'panchnamaDate', label: 'Possession Date' },
+            { key: 'status', label: 'Mutation Status', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'tehsildar-mutation-sanction' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Sanction Entry
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { mutationNo: 'MUT-2024-8842', khasraNumber: '442/1-A', village: 'Hingna', formerOwner: 'Sh. Rajendra Patel', transferee: 'NHAI PIU Nagpur', panchnamaDate: '15-Oct-2024', status: 'Sanctioned' },
+            { mutationNo: 'MUT-2024-8843', khasraNumber: '445/1', village: 'Wanadongri', formerOwner: 'Sh. Suresh Patel', transferee: 'NHAI PIU Nagpur', panchnamaDate: '20-Oct-2024', status: 'Processing' },
+            { mutationNo: 'MUT-2024-8844', khasraNumber: '450/2-A', village: 'Butibori', formerOwner: 'M/s Sharma Enterprises', transferee: 'NHAI PIU Nagpur', panchnamaDate: '24-Oct-2024', status: 'Sanctioned' },
+            { mutationNo: 'MUT-2024-8845', khasraNumber: '448/3', village: 'Karanja', formerOwner: 'Sh. Suresh Patil', transferee: 'NHAI PIU Nagpur', panchnamaDate: '26-Oct-2024', status: 'Under Review' },
+          ],
+        };
+
+      case 'alerts':
+        return {
+          title: 'Tehsil Court Pending Actions & Statutory Alerts Gateway',
+          category: 'Revenue Court Alert Hub',
+          description: 'High-priority notifications for upcoming digital hearing appearances, expiring statutory reply windows, high court injunction stays, and pending compensation e-KYC verifications.',
+          kpis: [
+            { label: 'Urgent Dockets', value: '4 Priority', subtitle: 'Immediate Action Required', color: 'red', icon: 'notifications_active' },
+            { label: 'Hearings This Week', value: '5 Listed', subtitle: 'Summons Served', color: 'navy', icon: 'event' },
+            { label: 'Stay Notices Logged', value: '2 High Court', subtitle: 'Injunctions Active', color: 'ochre', icon: 'gavel' },
+            { label: 'e-KYC Pending', value: '3 Beneficiaries', subtitle: 'Awaiting Verification', color: 'tertiary', icon: 'fingerprint' },
+          ],
+          columns: [
+            { key: 'alertId', label: 'Alert ID', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            { key: 'severity', label: 'Severity', render: (v: string) => <StatusBadge status={v} variant={v === 'Critical' ? 'error' : 'warning'} /> },
+            { key: 'title', label: 'Subject Matter' },
+            { key: 'target', label: 'Concerned Plot / Party' },
+            { key: 'deadline', label: 'Statutory Deadline' },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => {
+                    setActionSuccess(`Alert ${r.alertId} processed and recorded in Tehsildar Court register.`);
+                  }}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Process Alert
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { alertId: 'ALT-TEH-001', severity: 'Critical', title: 'High Court Interim Stay on Solatium Apportionment', target: 'Case DISP-MH-2023-1104 (Wanadongri)', deadline: '18-Nov-2024' },
+            { alertId: 'ALT-TEH-002', severity: 'High', title: 'Digital Hearing Scheduled for Boundary Dispute', target: 'Sh. Rameshwar Lal vs Geeta Devi (Plot #142/3)', deadline: '14-Nov-2024' },
+            { alertId: 'ALT-TEH-003', severity: 'Medium', title: 'Beneficiary Bank e-KYC Verification Pending', target: 'Sh. Vikram Singh (Plot #445/1)', deadline: '10-Nov-2024' },
+            { alertId: 'ALT-TEH-004', severity: 'High', title: 'Section 38 RoR Mutation Order Approval Due', target: 'Plot #450/2-A (Butibori)', deadline: '08-Nov-2024' },
+          ],
+        };
+
+      case 'reports':
+        return {
+          title: 'Tehsil-Level Revenue Court & Acquisition MIS Reports',
+          category: 'Revenue Administration & Reporting',
+          description: 'Generate and export statutory Tehsil returns for District Collector, State Revenue Board, and Land Acquisition Officer.',
+          kpis: [
+            { label: 'Tehsil Reports Ready', value: '12 Reports', subtitle: 'Automated Returns', color: 'navy', icon: 'analytics' },
+            { label: 'Affected Persons (PAP)', value: '1,452', subtitle: 'All Villages Synced', color: 'green', icon: 'groups' },
+            { label: 'Disbursed Compensation', value: '₹ 128.4 Cr', subtitle: 'PFMS e-Kuber', color: 'tertiary', icon: 'payments' },
+            { label: 'Mutation Compliance', value: '88%', subtitle: 'State Revenue Code', color: 'ochre', icon: 'verified' },
+          ],
+          columns: [
+            { key: 'title', label: 'Report Title', render: (v: string) => <span className="font-bold text-slate-900">{v}</span> },
+            { key: 'statute', label: 'Statutory Reference' },
+            { key: 'frequency', label: 'Frequency' },
+            { key: 'lastUpdated', label: 'Last Updated' },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => {
+                    const docContent = `GOVERNMENT OF INDIA • TEHSILDAR REVENUE COURT SIKAR / NAGPUR\nREPORT TITLE: ${r.title}\nSTATUTORY ACT: ${r.statute}\nGENERATED: ${new Date().toLocaleString('en-IN')}\nSTATUS: DIGITALLY CERTIFIED BY TEHSILDAR`;
+                    const blob = new Blob([docContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${r.title.replace(/\s+/g, '_')}_Tehsil.txt`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    setActionSuccess(`Tehsil report "${r.title}" downloaded successfully.`);
+                  }}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Export Report
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'TR1', title: 'Tehsil Monthly Land Acquisition & Dispute Summary', statute: 'Section 64 & Section 76 RFCTLARR', frequency: 'Monthly', lastUpdated: '28-Oct-2024' },
+            { id: 'TR2', title: 'Section 15 Hearing Proceedings & Magistrate Findings Docket', statute: 'Section 15(2) Inquiry Record', frequency: 'Fortnightly', lastUpdated: '26-Oct-2024' },
+            { id: 'TR3', title: 'Beneficiary Compensation DBT & e-KYC Verification Register', statute: 'Section 26-30 PFMS Return', frequency: 'Weekly', lastUpdated: '28-Oct-2024' },
+            { id: 'TR4', title: 'Section 38 RoR Mutation & State Alienation Progress Return', statute: 'State Land Revenue Code', frequency: 'Monthly', lastUpdated: '24-Oct-2024' },
+          ],
+        };
+
+      // ==========================================
       // District Collector Subfeatures (14 Modules)
       // ==========================================
       case 'proposal-review':
@@ -1457,6 +1631,52 @@ export default function GenericModulePage() {
                     <label className="font-bold text-slate-700 block text-xs">Tehsildar / LAO Compensation Disbursement Directive:</label>
                     <textarea
                       defaultValue={`Direct Benefit Transfer of ${formatINR(selectedRecord.disbursementAmount)} approved under Section 23/30 of RFCTLARR Act (2013). Authorized for electronic credit dispatch via PFMS single window.`}
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'tehsildar-ror-verify' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-[#003178] flex justify-between">
+                      <span>ULPIN: {selectedRecord.ulpin}</span>
+                      <span>Plot #{selectedRecord.khasraNumber}</span>
+                    </div>
+                    <div><strong>Owner in RoR:</strong> {selectedRecord.ownerName} ({selectedRecord.village})</div>
+                    <div><strong>Area Recorded:</strong> {selectedRecord.areaHectares} Hectares</div>
+                    <div><strong>Encumbrance Search:</strong> {selectedRecord.encumbrance}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Tehsildar RoR Certification Remarks:</label>
+                    <textarea
+                      defaultValue="7/12 RoR extract verified against DILRMP digitized state land records. Title and boundaries certified for Section 19 declaration."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'tehsildar-mutation-sanction' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-emerald-900 flex justify-between">
+                      <span>Mutation #{selectedRecord.mutationNo}</span>
+                      <span>Plot #{selectedRecord.khasraNumber}</span>
+                    </div>
+                    <div><strong>Former Landowner:</strong> {selectedRecord.formerOwner} ({selectedRecord.village})</div>
+                    <div><strong>Transferee Agency:</strong> {selectedRecord.transferee}</div>
+                    <div><strong>Possession Panchnama:</strong> {selectedRecord.panchnamaDate}</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Revenue Court Tehsildar Mutation Sanction Order:</label>
+                    <textarea
+                      defaultValue="Mutation sanctioned under State Land Revenue Code. Record of Rights (7/12) updated to record title transfer in favor of Requisite Agency."
                       rows={3}
                       className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
                     />
