@@ -74,119 +74,174 @@ class CompensationResponse(BaseModel):
 # Pre-populated with official government officer credentials
 # =========================================================
 USER_DATABASE: Dict[str, dict] = {
-    "agency@gov.in": {
-        "email": "agency@gov.in",
-        "password": "password123",
+    "agency@nhai.gov.in": {
+        "email": "agency@nhai.gov.in",
+        "password": "Agency@123",
         "role": "AGENCY",
         "user": {
             "name": "Sh. Jagdish Deshmukh",
             "designation": "Project Director",
             "department": "NHAI - PIU Nagpur",
-            "email": "agency@gov.in"
+            "email": "agency@nhai.gov.in"
+        }
+    },
+    "agency@gov.in": {
+        "email": "agency@nhai.gov.in",
+        "password": "Agency@123",
+        "role": "AGENCY",
+        "user": {
+            "name": "Sh. Jagdish Deshmukh",
+            "designation": "Project Director",
+            "department": "NHAI - PIU Nagpur",
+            "email": "agency@nhai.gov.in"
         }
     },
     "agency": {
-        "email": "agency@gov.in",
-        "password": "password123",
+        "email": "agency@nhai.gov.in",
+        "password": "Agency@123",
         "role": "AGENCY",
         "user": {
             "name": "Sh. Jagdish Deshmukh",
             "designation": "Project Director",
             "department": "NHAI - PIU Nagpur",
-            "email": "agency@gov.in"
+            "email": "agency@nhai.gov.in"
+        }
+    },
+    "lao.pune@revenue.gov.in": {
+        "email": "lao.pune@revenue.gov.in",
+        "password": "LAO@123",
+        "role": "LAO",
+        "user": {
+            "name": "Smt. Meera Kulkarni",
+            "designation": "Land Acquisition Officer",
+            "department": "Revenue Dept. - Pune Division",
+            "email": "lao.pune@revenue.gov.in"
         }
     },
     "lao@gov.in": {
-        "email": "lao@gov.in",
-        "password": "password123",
+        "email": "lao.pune@revenue.gov.in",
+        "password": "LAO@123",
         "role": "LAO",
         "user": {
             "name": "Smt. Meera Kulkarni",
             "designation": "Land Acquisition Officer",
             "department": "Revenue Dept. - Pune Division",
-            "email": "lao@gov.in"
+            "email": "lao.pune@revenue.gov.in"
         }
     },
     "lao": {
-        "email": "lao@gov.in",
-        "password": "password123",
+        "email": "lao.pune@revenue.gov.in",
+        "password": "LAO@123",
         "role": "LAO",
         "user": {
             "name": "Smt. Meera Kulkarni",
             "designation": "Land Acquisition Officer",
             "department": "Revenue Dept. - Pune Division",
-            "email": "lao@gov.in"
+            "email": "lao.pune@revenue.gov.in"
+        }
+    },
+    "dfo.forest@moefcc.gov.in": {
+        "email": "dfo.forest@moefcc.gov.in",
+        "password": "Forest@123",
+        "role": "FOREST",
+        "user": {
+            "name": "Dr. Anil Sharma",
+            "designation": "Divisional Forest Officer",
+            "department": "MoEFCC - Western Region",
+            "email": "dfo.forest@moefcc.gov.in"
         }
     },
     "forest@gov.in": {
-        "email": "forest@gov.in",
-        "password": "password123",
+        "email": "dfo.forest@moefcc.gov.in",
+        "password": "Forest@123",
         "role": "FOREST",
         "user": {
             "name": "Dr. Anil Sharma",
             "designation": "Divisional Forest Officer",
             "department": "MoEFCC - Western Region",
-            "email": "forest@gov.in"
+            "email": "dfo.forest@moefcc.gov.in"
         }
     },
     "forest": {
-        "email": "forest@gov.in",
-        "password": "password123",
+        "email": "dfo.forest@moefcc.gov.in",
+        "password": "Forest@123",
         "role": "FOREST",
         "user": {
             "name": "Dr. Anil Sharma",
             "designation": "Divisional Forest Officer",
             "department": "MoEFCC - Western Region",
-            "email": "forest@gov.in"
+            "email": "dfo.forest@moefcc.gov.in"
+        }
+    },
+    "collector.nagpur@gov.in": {
+        "email": "collector.nagpur@gov.in",
+        "password": "Collector@123",
+        "role": "COLLECTOR",
+        "user": {
+            "name": "Sh. Ramesh Kumar, IAS",
+            "designation": "District Collector",
+            "department": "District Administration - Nagpur",
+            "email": "collector.nagpur@gov.in"
         }
     },
     "collector@gov.in": {
-        "email": "collector@gov.in",
-        "password": "password123",
+        "email": "collector.nagpur@gov.in",
+        "password": "Collector@123",
         "role": "COLLECTOR",
         "user": {
             "name": "Sh. Ramesh Kumar, IAS",
             "designation": "District Collector",
             "department": "District Administration - Nagpur",
-            "email": "collector@gov.in"
+            "email": "collector.nagpur@gov.in"
         }
     },
     "collector": {
-        "email": "collector@gov.in",
-        "password": "password123",
+        "email": "collector.nagpur@gov.in",
+        "password": "Collector@123",
         "role": "COLLECTOR",
         "user": {
             "name": "Sh. Ramesh Kumar, IAS",
             "designation": "District Collector",
             "department": "District Administration - Nagpur",
-            "email": "collector@gov.in"
+            "email": "collector.nagpur@gov.in"
+        }
+    },
+    "tehsildar.court@revenue.gov.in": {
+        "email": "tehsildar.court@revenue.gov.in",
+        "password": "Tehsildar@123",
+        "role": "TEHSILDAR",
+        "user": {
+            "name": "Sh. Vikram Singh",
+            "designation": "Tehsildar",
+            "department": "Revenue Court - Sikar Tehsil",
+            "email": "tehsildar.court@revenue.gov.in"
         }
     },
     "tehsildar@gov.in": {
-        "email": "tehsildar@gov.in",
-        "password": "password123",
+        "email": "tehsildar.court@revenue.gov.in",
+        "password": "Tehsildar@123",
         "role": "TEHSILDAR",
         "user": {
             "name": "Sh. Vikram Singh",
             "designation": "Tehsildar",
             "department": "Revenue Court - Sikar Tehsil",
-            "email": "tehsildar@gov.in"
+            "email": "tehsildar.court@revenue.gov.in"
         }
     },
     "tehsildar": {
-        "email": "tehsildar@gov.in",
-        "password": "password123",
+        "email": "tehsildar.court@revenue.gov.in",
+        "password": "Tehsildar@123",
         "role": "TEHSILDAR",
         "user": {
             "name": "Sh. Vikram Singh",
             "designation": "Tehsildar",
             "department": "Revenue Court - Sikar Tehsil",
-            "email": "tehsildar@gov.in"
+            "email": "tehsildar.court@revenue.gov.in"
         }
     },
     "citizen@gov.in": {
         "email": "citizen@gov.in",
-        "password": "password123",
+        "password": "Citizen@123",
         "role": "CITIZEN",
         "user": {
             "name": "Sh. Rajendra Patel",
@@ -198,7 +253,7 @@ USER_DATABASE: Dict[str, dict] = {
     },
     "citizen": {
         "email": "citizen@gov.in",
-        "password": "password123",
+        "password": "Citizen@123",
         "role": "CITIZEN",
         "user": {
             "name": "Sh. Rajendra Patel",

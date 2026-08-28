@@ -25,20 +25,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'bhu_drishti_auth_session';
 const REGISTERED_USERS_KEY = 'bhu_registered_users_db';
 
-// Authorized Government & Officer Credentials Registry
+// Authorized Government & Officer Credentials Registry (Unique per Actor)
 const AUTHORIZED_ACCOUNTS: Record<string, { role: UserRole; password: string }> = {
-  'agency@gov.in': { role: 'AGENCY', password: 'password123' },
-  'agency': { role: 'AGENCY', password: 'password123' },
-  'lao@gov.in': { role: 'LAO', password: 'password123' },
-  'lao': { role: 'LAO', password: 'password123' },
-  'forest@gov.in': { role: 'FOREST', password: 'password123' },
-  'forest': { role: 'FOREST', password: 'password123' },
-  'collector@gov.in': { role: 'COLLECTOR', password: 'password123' },
-  'collector': { role: 'COLLECTOR', password: 'password123' },
-  'tehsildar@gov.in': { role: 'TEHSILDAR', password: 'password123' },
-  'tehsildar': { role: 'TEHSILDAR', password: 'password123' },
-  'citizen@gov.in': { role: 'CITIZEN', password: 'password123' },
-  'citizen': { role: 'CITIZEN', password: 'password123' },
+  // 1. Requisite Agency (NHAI)
+  'agency@nhai.gov.in': { role: 'AGENCY', password: 'Agency@123' },
+  'agency@gov.in': { role: 'AGENCY', password: 'Agency@123' },
+  'agency': { role: 'AGENCY', password: 'Agency@123' },
+
+  // 2. Land Acquisition Officer (LAO)
+  'lao.pune@revenue.gov.in': { role: 'LAO', password: 'LAO@123' },
+  'lao@gov.in': { role: 'LAO', password: 'LAO@123' },
+  'lao': { role: 'LAO', password: 'LAO@123' },
+
+  // 3. Forest & Environment Officer (DFO)
+  'dfo.forest@moefcc.gov.in': { role: 'FOREST', password: 'Forest@123' },
+  'forest@gov.in': { role: 'FOREST', password: 'Forest@123' },
+  'forest': { role: 'FOREST', password: 'Forest@123' },
+
+  // 4. District Collector (IAS)
+  'collector.nagpur@gov.in': { role: 'COLLECTOR', password: 'Collector@123' },
+  'collector@gov.in': { role: 'COLLECTOR', password: 'Collector@123' },
+  'collector': { role: 'COLLECTOR', password: 'Collector@123' },
+
+  // 5. Revenue Court / Tehsildar
+  'tehsildar.court@revenue.gov.in': { role: 'TEHSILDAR', password: 'Tehsildar@123' },
+  'tehsildar@gov.in': { role: 'TEHSILDAR', password: 'Tehsildar@123' },
+  'tehsildar': { role: 'TEHSILDAR', password: 'Tehsildar@123' },
+
+  // 6. Citizen / Landowner
+  'citizen@gov.in': { role: 'CITIZEN', password: 'Citizen@123' },
+  'citizen': { role: 'CITIZEN', password: 'Citizen@123' },
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
