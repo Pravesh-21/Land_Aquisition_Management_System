@@ -25,6 +25,7 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       { id: 'corridor', label: 'Corridor Definition', icon: 'route', href: '/dashboard/agency/corridor' },
       { id: 'parcels', label: 'Parcel Monitoring', icon: 'grid_view', href: '/dashboard/agency/parcels' },
       { id: 'risk', label: 'Risk Scoring (ML)', icon: 'warning', href: '/dashboard/agency/risk' },
+      { id: 'affected-persons', label: 'Affected Population Schedule', icon: 'groups', href: '/dashboard/agency/affected-persons' },
     ],
   },
   LAO: {
@@ -47,6 +48,7 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       { id: 'vegetation', label: 'Vegetation Analysis', icon: 'eco', href: '/dashboard/lao/vegetation' },
       { id: 'hearing', label: 'Hearing Management', icon: 'gavel', href: '/dashboard/lao/hearing-management' },
       { id: 'beneficiaries', label: 'DBT Disbursement', icon: 'currency_rupee', href: '/dashboard/lao/beneficiaries' },
+      { id: 'affected-persons', label: 'Affected Persons & PAFs', icon: 'groups', href: '/dashboard/lao/affected-persons' },
     ],
   },
   FOREST: {
@@ -66,6 +68,7 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       { id: 'doc-review', label: 'Document Review', icon: 'description', href: '/dashboard/forest/document-review' },
       { id: 'impact', label: 'Environmental Impact', icon: 'eco', href: '/dashboard/forest/impact-review' },
       { id: 'noc', label: 'Clearance / NOC Process', icon: 'task_alt', href: '/dashboard/forest/noc-processing' },
+      { id: 'affected-persons', label: 'Forest Dweller & Tribal PAFs', icon: 'groups', href: '/dashboard/forest/affected-persons' },
     ],
   },
   COLLECTOR: {
@@ -111,6 +114,7 @@ const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       { id: 'dashboard', label: 'Court Dashboard', icon: 'dashboard', href: '/dashboard/tehsildar' },
       { id: 'hearing-manager', label: 'Hearing Manager', icon: 'gavel', href: '/dashboard/tehsildar/hearing-manager' },
       { id: 'disputes', label: 'Dispute Cases', icon: 'folder_open', href: '/dashboard/tehsildar/disputes' },
+      { id: 'affected-persons', label: 'Affected Persons & Disbursement', icon: 'groups', href: '/dashboard/tehsildar/affected-persons' },
     ],
   },
   CITIZEN: {

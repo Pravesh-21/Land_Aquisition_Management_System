@@ -1034,6 +1034,99 @@ export default function GenericModulePage() {
         };
 
       // ==========================================
+      // Project Affected Persons (PAP) & Compensation Register
+      // ==========================================
+      case 'affected-persons':
+      case 'beneficiaries':
+        if (currentRole === 'CITIZEN') {
+          return {
+            title: 'Statutory Data Protection & Personal Privacy Guard',
+            category: 'Citizen / Landowner Portal',
+            description: 'Under Section 8(1)(j) of the Right to Information Act and the Digital Personal Data Protection Act (2023), district-wide beneficiary personal financial identifiers, Aadhaar numbers, and bank disbursement schedules are restricted to Authorized Revenue Officers.',
+            kpis: [
+              { label: 'Access Policy', value: 'Restricted', subtitle: 'Statutory Privacy Rule', color: 'red', icon: 'lock' },
+              { label: 'Your Parcel Award', value: '₹ 47,38,500', subtitle: 'Plot #442/1-A', color: 'green', icon: 'verified' },
+              { label: 'DBT Status', value: 'Disbursed', subtitle: 'SBI *4920', color: 'navy', icon: 'account_balance' },
+            ],
+            columns: [
+              { key: 'item', label: 'Authorized Single-Window View' },
+              { key: 'description', label: 'Access Path' },
+            ],
+            data: [
+              { item: 'View Your Verified Compensation Breakdown', description: 'Available under Citizen Compensation Dashboard (/dashboard/citizen/compensation)' },
+              { item: 'Track Section 11/19/23 Award Lifecycle', description: 'Available under Citizen Acquisition Status (/dashboard/citizen/status)' },
+              { item: 'Download Certified Award Order & Bank Receipts', description: 'Available under Citizen Documents Repository (/dashboard/citizen/documents)' },
+            ],
+          };
+        }
+
+        return {
+          title: 'Project Affected Persons (PAP) & Compensation Entitlement Register',
+          category: roleConfig.label,
+          description: 'Statutory register of project affected persons, title-holders, agricultural tenants, and displaced families (PAF) under RFCTLARR Act (2013). Tehsildar & Compensation Office gateway for direct electronic compensation disbursement.',
+          kpis: [
+            { label: 'Total Affected Persons', value: '1,452 PAP', subtitle: '412 PAF Families', color: 'navy', icon: 'groups' },
+            { label: 'Assessed Compensation', value: '₹ 184.2 Cr', subtitle: '100% Solatium + Assets', color: 'green', icon: 'payments' },
+            { label: 'Aadhaar e-KYC Verified', value: '96.4%', subtitle: 'PFMS Single-Window Ready', color: 'tertiary', icon: 'verified_user' },
+            { label: 'Disbursement Active', value: '₹ 128.4 Cr', subtitle: 'Transferred via PFMS DBT', color: 'ochre', icon: 'account_balance' },
+          ],
+          columns: [
+            { key: 'id', label: 'Beneficiary ID', render: (v: string) => <span className="font-mono font-bold text-[var(--color-gov-navy)]">{v}</span> },
+            {
+              key: 'name',
+              label: 'Affected Person & Category',
+              render: (v: string, r: any) => (
+                <div>
+                  <div className="font-semibold text-slate-900">{v}</div>
+                  <div className="text-[11px] text-slate-500">{r.category || 'Title-Holder Landowner'}</div>
+                </div>
+              ),
+            },
+            { key: 'village', label: 'Village & Plot', render: (_: any, r: any) => `${r.village} (Plot #${r.surveyNumber})` },
+            {
+              key: 'bankDetails',
+              label: 'Aadhaar & Bank Account',
+              render: (_: any, r: any) => (
+                <div className="font-mono text-xs">
+                  <div className="text-slate-800">{r.bankName} ({r.accountNumber})</div>
+                  <div className="text-[10px] text-slate-500">{r.aadhaar}</div>
+                </div>
+              ),
+            },
+            { key: 'kycStatus', label: 'e-KYC Status', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'disbursementAmount',
+              label: 'Total Award (₹)',
+              align: 'right' as const,
+              render: (v: number) => <span className="font-bold text-emerald-800">{formatINR(v)}</span>,
+            },
+            { key: 'disbursementStatus', label: 'Disbursement Stage', render: (v: string) => <StatusBadge status={v} variant={getStatusVariant(v)} /> },
+            {
+              key: 'action',
+              label: 'Action',
+              align: 'center' as const,
+              render: (_: any, r: any) => (
+                <button
+                  onClick={() => setSelectedRecord({ ...r, modal: 'pap-disburse' })}
+                  className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+                >
+                  Process DBT
+                </button>
+              ),
+            },
+          ],
+          data: [
+            { id: 'PAF-MH-84920', name: 'Sh. Rajendra Patel', category: 'Title-Holder Landowner (100% Share)', aadhaar: 'XXXX XXXX 4920', accountNumber: '*4920', bankName: 'SBI Hingna Branch', village: 'Hingna, Nagpur', surveyNumber: '442/1-A', kycStatus: 'Verified', disbursementAmount: 4738500, disbursementStatus: 'Sanctioned' },
+            { id: 'PAF-MH-84921', name: 'Sh. Rameshwar Lal', category: 'Title-Holder (Joint Co-owner)', aadhaar: 'XXXX XXXX 8112', accountNumber: '*8112', bankName: 'PNB Nagpur Central', village: 'Ramgarh', surveyNumber: '142/3', kycStatus: 'Verified', disbursementAmount: 2000000, disbursementStatus: 'Processing' },
+            { id: 'PAF-MH-84922', name: 'Smt. Sunita Devi', category: 'Agricultural Tenant Farmer', aadhaar: 'XXXX XXXX 3301', accountNumber: '*3301', bankName: 'BOI Kondagaon', village: 'Kondagaon', surveyNumber: '46', kycStatus: 'Verified', disbursementAmount: 825000, disbursementStatus: 'Disbursed' },
+            { id: 'PAF-MH-84923', name: 'Sh. Vikram Singh', category: 'Landless Agricultural Laborer', aadhaar: 'XXXX XXXX 9901', accountNumber: '*9901', bankName: 'HDFC Wanadongri', village: 'Wanadongri', surveyNumber: '445/1', kycStatus: 'Pending', disbursementAmount: 510000, disbursementStatus: 'Pending Verification' },
+            { id: 'PAF-MH-84924', name: 'M/s Sharma Enterprises', category: 'Commercial Plot Owner', aadhaar: 'XXXX XXXX 5567', accountNumber: '*5567', bankName: 'SBI Butibori', village: 'Butibori', surveyNumber: '450/2-A', kycStatus: 'Verified', disbursementAmount: 9800000, disbursementStatus: 'Sanctioned' },
+            { id: 'PAF-MH-84925', name: 'Sh. Suresh Patil', category: 'Title-Holder Landowner', aadhaar: 'XXXX XXXX 7789', accountNumber: '*7789', bankName: 'Bank of Maharashtra', village: 'Karanja', surveyNumber: '448/3', kycStatus: 'Verified', disbursementAmount: 7400000, disbursementStatus: 'Processing' },
+            { id: 'PAF-MH-84926', name: 'Smt. Geeta Devi & Co-heirs', category: 'Legal Successor Beneficiary', aadhaar: 'XXXX XXXX 2244', accountNumber: '*2244', bankName: 'UCO Bank', village: 'Ramgarh', surveyNumber: '142/3-B', kycStatus: 'Verified', disbursementAmount: 1800000, disbursementStatus: 'Processing' },
+          ],
+        };
+
+      // ==========================================
       // Default Fallback for other modules
       // ==========================================
       default:
@@ -1348,6 +1441,30 @@ export default function GenericModulePage() {
                     <label className="font-bold text-slate-700 block text-xs">District Collector Appellate Decree / Order:</label>
                     <textarea
                       defaultValue="Collectorate order passed under statutory supervisory powers. Directions issued to both authorities for immediate enforcement."
+                      rows={3}
+                      className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedRecord.modal === 'pap-disburse' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-slate-800 space-y-1">
+                    <div className="font-bold text-emerald-900 flex justify-between">
+                      <span>{selectedRecord.id} • {selectedRecord.name}</span>
+                      <span className="font-bold">{formatINR(selectedRecord.disbursementAmount)}</span>
+                    </div>
+                    <div><strong>Category:</strong> {selectedRecord.category}</div>
+                    <div><strong>Survey Plot:</strong> Plot #{selectedRecord.surveyNumber} ({selectedRecord.village})</div>
+                    <div><strong>Bank Account:</strong> {selectedRecord.bankName} (A/c: {selectedRecord.accountNumber})</div>
+                    <div><strong>Aadhaar e-KYC:</strong> {selectedRecord.kycStatus} ({selectedRecord.aadhaar})</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 block text-xs">Tehsildar / LAO Compensation Disbursement Directive:</label>
+                    <textarea
+                      defaultValue={`Direct Benefit Transfer of ${formatINR(selectedRecord.disbursementAmount)} approved under Section 23/30 of RFCTLARR Act (2013). Authorized for electronic credit dispatch via PFMS single window.`}
                       rows={3}
                       className="w-full border border-slate-300 p-2 rounded text-xs focus:border-[#0072BC] focus:outline-none"
                     />
