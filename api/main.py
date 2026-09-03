@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from api.core.config import settings
-from api.routers import auth_router, protected_router, users_router
+from api.routers import auth_router, protected_router, users_router, admin_router
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -19,19 +19,21 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# CORS Configuration
+# Tightened Explicit CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With", "Cookie"],
+    expose_headers=["Retry-After", "Set-Cookie"],
 )
 
 # Include Routers
 app.include_router(auth_router)
 app.include_router(protected_router)
 app.include_router(users_router)
+app.include_router(admin_router)
 
 
 # --- System Health Check ---

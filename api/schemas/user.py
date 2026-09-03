@@ -57,3 +57,25 @@ class UserCreate(BaseModel):
     phone: Optional[str] = None
     role_names: List[str] = ["CITIZEN"]
     department_codes: List[str] = ["CITIZEN"]
+
+
+class AdminCreateUserRequest(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    full_name: str
+    phone: Optional[str] = None
+    role: str = "AGENCY"  # AGENCY, LAO, FOREST, COLLECTOR, TEHSILDAR, CITIZEN, ADMIN
+    department_code: str = "NHAI"  # SYSTEM_ADMIN, NHAI, LAND_ACQUISITION, etc.
+
+
+class UpdateUserStatusRequest(BaseModel):
+    is_active: bool
+
+
+class UpdateUserRolesRequest(BaseModel):
+    roles: List[str]
+
+
+class ResetPasswordRequest(BaseModel):
+    new_password: str

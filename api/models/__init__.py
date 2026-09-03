@@ -5,6 +5,7 @@ from api.models.role import Role
 from api.models.department import Department
 from api.models.refresh_token import RefreshToken
 from api.models.user import User
+from api.models.audit_log import AuthAuditLog
 
 __all__ = [
     "Base",
@@ -16,4 +17,5 @@ __all__ = [
     "Department",
     "RefreshToken",
     "User",
+    "AuthAuditLog",
 ]

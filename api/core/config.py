@@ -18,6 +18,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # Cookie Security
+    COOKIE_SECURE: bool = False  # Set to True in HTTPS production environments
+    COOKIE_SAMESITE: str = "lax"  # lax or strict
+
+    # Rate Limiting
+    RATE_LIMIT_LOGIN_ATTEMPTS: int = 5
+    RATE_LIMIT_LOGIN_WINDOW_SECONDS: int = 300  # 5 minutes
+
     # Seed configuration
     SEED_PASSWORD: str = "Pass@123"
 

@@ -31,6 +31,32 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
+def validate_password_complexity(password: str) -> Tuple[bool, Optional[str]]:
+    """
+    Validate password meets statutory security standards:
+    - At least 8 characters
+    - At least one uppercase letter [A-Z]
+    - At least one lowercase letter [a-z]
+    - At least one digit [0-9]
+    - At least one special symbol [!@#$%^&*()_+-=[]{}|;:,.<>?]
+    Returns (is_valid, error_message).
+    """
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long."
+    if not any(c.isupper() for c in password):
+        return False, "Password must contain at least one uppercase letter (A-Z)."
+    if not any(c.islower() for c in password):
+        return False, "Password must contain at least one lowercase letter (a-z)."
+    if not any(c.isdigit() for c in password):
+        return False, "Password must contain at least one digit (0-9)."
+    
+    special_characters = set("!@#$%^&*()_+-=[]{}|;:,.<>?/~`'\"\\")
+    if not any(c in special_characters for c in password):
+        return False, "Password must contain at least one special character (e.g. !@#$%^&*)."
+
+    return True, None
+
+
 def hash_token(raw_token: str) -> str:
     """Compute secure SHA-256 hash of a refresh token for database storage."""
     return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()

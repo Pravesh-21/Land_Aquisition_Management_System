@@ -117,3 +117,59 @@ class UserRepository:
             db.add(t)
         db.commit()
         return len(tokens)
+
+    @staticmethod
+    def get_refresh_token_by_id(db: Session, session_id: uuid.UUID) -> Optional[RefreshToken]:
+        return db.query(RefreshToken).filter(RefreshToken.id == session_id).first()
+
+    @staticmethod
+    def get_user_sessions(db: Session, user_id: uuid.UUID) -> List[RefreshToken]:
+        return (
+            db.query(RefreshToken)
+            .filter(RefreshToken.user_id == user_id)
+            .order_by(RefreshToken.created_at.desc())
+            .all()
+        )
+
+    @staticmethod
+    def update_user_status(db: Session, user: User, is_active: bool) -> User:
+        user.is_active = is_active
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def update_user_roles(db: Session, user: User, roles: List[Role]) -> User:
+        user.roles = roles
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def update_user_password(db: Session, user: User, password_hash: str) -> User:
+        user.password_hash = password_hash
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def list_users_filtered(
+        db: Session,
+        search: Optional[str] = None,
+        role: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> List[User]:
+        query = db.query(User).order_by(User.created_at.desc())
+        if search:
+            s = f"%{search.strip().lower()}%"
+            query = query.filter(or_(User.username.ilike(s), User.email.ilike(s), User.full_name.ilike(s)))
+        if is_active is not None:
+            query = query.filter(User.is_active == is_active)
+        if role:
+            query = query.join(User.roles).filter(Role.name == role.upper().strip())
+        return query.offset(offset).limit(limit).all()

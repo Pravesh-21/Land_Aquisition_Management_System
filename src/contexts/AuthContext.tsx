@@ -20,6 +20,9 @@ interface AuthContextType extends AuthState {
   logout: () => void;
   canAccessRole: (requiredRole: UserRole) => boolean;
   hasPermission: (permission: string) => boolean;
+  changePassword: (oldPassword: string, newPassword: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
+  revokeAllSessions: () => Promise<{ success: boolean; message: string }>;
+  getUserSessions: () => Promise<any[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             const meRes = await fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
               headers: { Authorization: `Bearer ${storedAccessToken}` },
+              credentials: 'include',
             });
 
             if (meRes.ok) {
@@ -94,36 +98,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // 2. Access token expired or invalid -> Attempt refresh rotation
-        if (storedRefreshToken) {
-          try {
-            const refreshRes = await fetch(`${getApiBaseUrl()}/api/v1/auth/refresh`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ refresh_token: storedRefreshToken }),
-            });
+        // 2. Access token expired or invalid -> Attempt refresh rotation (via payload or HttpOnly cookie)
+        try {
+          const refreshRes = await fetch(`${getApiBaseUrl()}/api/v1/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ refresh_token: storedRefreshToken || undefined }),
+          });
 
-            if (refreshRes.ok) {
-              const tokenData = await refreshRes.json();
-              const primaryRole = (tokenData.user.roles && tokenData.user.roles[0] ? tokenData.user.roles[0].toUpperCase() : 'CITIZEN') as UserRole;
-              const userProfile = mapBackendUser(tokenData.user, primaryRole);
+          if (refreshRes.ok) {
+            const tokenData = await refreshRes.json();
+            const primaryRole = (tokenData.user.roles && tokenData.user.roles[0] ? tokenData.user.roles[0].toUpperCase() : 'CITIZEN') as UserRole;
+            const userProfile = mapBackendUser(tokenData.user, primaryRole);
 
-              localStorage.setItem(ACCESS_TOKEN_KEY, tokenData.access_token);
+            localStorage.setItem(ACCESS_TOKEN_KEY, tokenData.access_token);
+            if (tokenData.refresh_token) {
               localStorage.setItem(REFRESH_TOKEN_KEY, tokenData.refresh_token);
-
-              setAuthState({
-                user: userProfile,
-                role: primaryRole,
-                token: tokenData.access_token,
-                permissions: tokenData.user.permissions || [],
-                isAuthenticated: true,
-                isLoaded: true,
-              });
-              return;
             }
-          } catch (e) {
-            console.warn('Failed to refresh token session:', e);
+
+            setAuthState({
+              user: userProfile,
+              role: primaryRole,
+              token: tokenData.access_token,
+              permissions: tokenData.user.permissions || [],
+              isAuthenticated: true,
+              isLoaded: true,
+            });
+            return;
           }
+        } catch (e) {
+          console.warn('Failed to refresh token session:', e);
         }
 
         // 3. If tokens are invalid or expired, clear storage
@@ -152,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           username: identifier,
           password: providedPassword,
@@ -208,10 +214,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: newUser.name,
           email: newUser.email,
           password: password || 'Citizen@123',
+          role: 'CITIZEN',
           phone: newUser.phone || null,
           aadhaar_or_id: newUser.aadhaar || null,
         }),
@@ -243,19 +251,89 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Self-Service Password Change
+  const changePassword = async (
+    oldPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        return { success: true, message: data.message || 'Password changed successfully.' };
+      } else {
+        return { success: false, message: data.detail || 'Failed to update password.' };
+      }
+    } catch (err) {
+      return { success: false, message: 'Network error communicating with password service.' };
+    }
+  };
+
+  // Revoke All Sessions across devices
+  const revokeAllSessions = async (): Promise<{ success: boolean; message: string }> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/revoke-all-sessions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        return { success: true, message: data.message || 'All sessions revoked.' };
+      } else {
+        return { success: false, message: data.detail || 'Failed to revoke sessions.' };
+      }
+    } catch (err) {
+      return { success: false, message: 'Network error revoking sessions.' };
+    }
+  };
+
+  // Get active user sessions
+  const getUserSessions = async (): Promise<any[]> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/sessions`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
+
   // Logout: Revoke refresh token on backend and clear local state
   const logout = async () => {
     const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (storedRefreshToken) {
-      try {
-        await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh_token: storedRefreshToken }),
-        });
-      } catch (err) {
-        console.warn('Error notifying backend of logout:', err);
-      }
+    try {
+      await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ refresh_token: storedRefreshToken || undefined }),
+      });
+    } catch (err) {
+      console.warn('Error notifying backend of logout:', err);
     }
 
     localStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -294,6 +372,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         canAccessRole,
         hasPermission,
+        changePassword,
+        revokeAllSessions,
+        getUserSessions,
       }}
     >
       {children}

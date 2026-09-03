@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr, Field
 
@@ -8,11 +9,42 @@ class LoginRequest(BaseModel):
 
 
 class RefreshTokenRequest(BaseModel):
-    refresh_token: str = Field(..., description="Active raw refresh token")
+    refresh_token: Optional[str] = Field(None, description="Active raw refresh token (or provided via HttpOnly cookie)")
 
 
 class LogoutRequest(BaseModel):
-    refresh_token: Optional[str] = Field(None, description="Active raw refresh token to revoke")
+    refresh_token: Optional[str] = Field(None, description="Active raw refresh token to revoke (or provided via HttpOnly cookie)")
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., description="Current plaintext password")
+    new_password: str = Field(..., description="New password meeting statutory complexity standards")
+    confirm_password: str = Field(..., description="Confirmation of new password")
+
+
+class SessionResponse(BaseModel):
+    id: str
+    created_at: datetime
+    expires_at: datetime
+    is_current: bool = False
+    is_active: bool = True
+
+    class Config:
+        from_attributes = True
+
+
+class AuditLogResponse(BaseModel):
+    id: str
+    user_id: Optional[str] = None
+    username: str
+    event_type: str
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    details: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class DepartmentSummary(BaseModel):
@@ -52,6 +84,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: EmailStr
     password: str
+    role: Optional[str] = Field(None, description="Only 'CITIZEN' allowed in public registration; authorities rejected")
     phone: Optional[str] = None
     aadhaar_or_id: Optional[str] = None
     district: Optional[str] = None
