@@ -9,6 +9,23 @@ import { UserRole, RoleConfig, SidebarItem, MockUser } from '@/types';
 // ============================================
 
 const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
+  ADMIN: {
+    id: 'ADMIN',
+    label: 'System Administrator',
+    shortLabel: 'Admin',
+    icon: 'admin_panel_settings',
+    description: 'System administration, RBAC permissions, and user auditing',
+    user: {
+      name: 'Sh. Rajeshwar Verma',
+      designation: 'System Administrator',
+      department: 'National Informatics Center',
+    },
+    sidebarItems: [
+      { id: 'dashboard', label: 'Administration Hub', icon: 'dashboard', href: '/dashboard/admin' },
+      { id: 'users', label: 'User Directory', icon: 'manage_accounts', href: '/dashboard/admin/users' },
+      { id: 'audit', label: 'System Audit Logs', icon: 'policy', href: '/dashboard/admin/audit' },
+    ],
+  },
   AGENCY: {
     id: 'AGENCY',
     label: 'Requisite Agency',

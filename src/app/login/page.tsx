@@ -59,6 +59,16 @@ const OFFICIAL_CREDENTIALS = [
     targetRoute: '/dashboard/tehsildar',
   },
   {
+    role: 'ADMIN' as UserRole,
+    title: 'System Administrator',
+    designation: 'Security & Access Administrator (NIC)',
+    userId: 'admin@gov.in',
+    shortId: 'admin',
+    password: 'Admin@123',
+    badgeColor: 'bg-slate-100 text-slate-900 border-slate-300',
+    targetRoute: '/dashboard/admin',
+  },
+  {
     role: 'CITIZEN' as UserRole,
     title: 'Citizen / Landowner',
     designation: 'Verified Title Holder (Sh. Rajendra Patel)',

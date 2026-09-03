@@ -11,6 +11,7 @@ interface AuthGuardProps {
 }
 
 const ROLE_PATH_MAP: Record<string, UserRole> = {
+  admin: 'ADMIN',
   agency: 'AGENCY',
   lao: 'LAO',
   forest: 'FOREST',

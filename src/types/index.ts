@@ -4,6 +4,7 @@
 
 // --- Role-Based Access Control ---
 export type UserRole = 
+  | 'ADMIN'
   | 'AGENCY'
   | 'LAO'
   | 'FOREST'
@@ -37,6 +38,7 @@ export interface MockUser {
   email?: string;
   avatar?: string;
   aadhaar?: string;
+  phone?: string;
 }
 
 // --- Land Parcel ---
