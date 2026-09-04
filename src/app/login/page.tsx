@@ -326,15 +326,10 @@ function LoginContent() {
         </div>
       </header>
 
-      {/* Main 2-Column Responsive Container */}
-      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-        <div className="w-full bg-white/95 backdrop-blur-md border border-white/40 shadow-2xl rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
-          
-          {/* ============================================================
-              LEFT COLUMN: Form (Login / Register / Verification)
-             ============================================================ */}
-          <div className="lg:col-span-6 xl:col-span-5 p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200">
-            <div>
+      {/* Main Container - Centered Responsive Card */}
+      <main className="relative z-10 flex-1 max-w-lg w-full mx-auto p-4 sm:p-6 my-auto flex items-center justify-center">
+        <div className="w-full bg-white/95 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col justify-between">
+          <div>
               {/* Official Brand & Emblem Header */}
               <div className="text-center space-y-1 mb-5">
                 <div 
@@ -728,23 +723,6 @@ function LoginContent() {
               </div>
               <div>NIC Standards Compliant</div>
             </div>
-          </div>
-
-          {/* ============================================================
-              RIGHT COLUMN: Application Visual / Illustration (GIS & Cadastral)
-              (Pure visual showcase — zero text overlay)
-             ============================================================ */}
-          <div className="hidden lg:block lg:col-span-6 xl:col-span-7 relative bg-[#0a1928] overflow-hidden min-h-[640px]">
-            <Image
-              src="/assets/auth_hero_real.jpg"
-              alt="BHU-NIRIKSHAN National Land Acquisition Management System - Highway & Cadastral Corridor"
-              fill
-              className="object-cover object-center"
-              priority
-              sizes="(min-width: 1024px) 60vw, 100vw"
-            />
-          </div>
-
         </div>
       </main>
 
