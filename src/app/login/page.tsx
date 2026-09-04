@@ -292,9 +292,23 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen relative flex flex-col justify-between overflow-x-hidden bg-slate-900">
+      {/* Semi-Transparent (Translucent) Full-Page Background Image */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <Image
+          src="/assets/login_bg_translucent.jpg"
+          alt="Rural Landscape & Cadastral Background"
+          fill
+          priority
+          className="object-cover object-center opacity-30"
+          sizes="100vw"
+        />
+        {/* Soft atmospheric gradient tint over the background image */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-900/40 to-slate-950/70" />
+      </div>
+
       {/* Top Government Strip */}
-      <header className="bg-[var(--color-gov-navy)] text-white text-[11px] px-4 py-1.5 flex items-center justify-between border-b border-slate-700">
+      <header className="relative z-10 bg-[var(--color-gov-navy)]/95 backdrop-blur-md text-white text-[11px] px-4 py-1.5 flex items-center justify-between border-b border-slate-700/60 shadow-xs">
         <div className="flex items-center gap-2">
           <span className="font-semibold tracking-wider">भारत सरकार | Government of India</span>
           <span className="text-slate-400">·</span>
@@ -304,7 +318,7 @@ function LoginContent() {
           <button
             type="button"
             onClick={() => setShowCredsModal(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded text-[11px] font-semibold hover:bg-amber-400/30 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded text-[11px] font-semibold hover:bg-amber-400/30 transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[14px]">vpn_key</span>
             Official Credentials Directory
@@ -313,8 +327,8 @@ function LoginContent() {
       </header>
 
       {/* Main 2-Column Responsive Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-        <div className="w-full bg-white border border-slate-200 rounded-xl shadow-md overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
+      <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="w-full bg-white/95 backdrop-blur-md border border-white/40 shadow-2xl rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
           
           {/* ============================================================
               LEFT COLUMN: Form (Login / Register / Verification)
@@ -825,7 +839,7 @@ function LoginContent() {
       )}
 
       {/* Global Footer */}
-      <footer className="text-center py-3 text-xs text-slate-500 border-t border-slate-200 bg-white">
+      <footer className="relative z-10 text-center py-3 text-xs text-slate-400 border-t border-white/10 bg-slate-950/80 backdrop-blur-md">
         © 2026 National Informatics Centre (NIC) · Ministry of Rural Development · Government of India
       </footer>
     </div>
