@@ -98,14 +98,11 @@ class AuthService:
         # 3. Verify password
         is_valid = verify_password(password, user.password_hash)
         if not is_valid:
-            # Support common casing variations (e.g. LAO@123 vs Lao@123 vs lao@123, agency@123 vs Agency@123)
+            # Support common casing variations of the provided password (e.g. LAO@123 vs Lao@123 vs lao@123, agency@123 vs Agency@123)
             candidate_variants = [
                 password.lower(),
                 password.upper(),
                 password.capitalize(),
-                f"{user.username.capitalize()}@123",
-                f"{user.username.upper()}@123",
-                f"{user.username.lower()}@123",
             ]
             for var in candidate_variants:
                 if var != password and verify_password(var, user.password_hash):
