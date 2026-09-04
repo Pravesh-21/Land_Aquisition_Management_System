@@ -321,19 +321,30 @@ function LoginContent() {
              ============================================================ */}
           <div className="lg:col-span-6 xl:col-span-5 p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200">
             <div>
-              {/* Brand Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-[var(--color-gov-navy)] text-white flex items-center justify-center font-bold text-lg shadow-xs">
-                  भृ
+              {/* Official Brand & Emblem Header */}
+              <div className="text-center space-y-1 mb-5">
+                <div 
+                  className="w-20 h-20 bg-white border-2 border-[#0072BC] shadow-md flex items-center justify-center p-1 overflow-hidden mx-auto mb-2.5"
+                  style={{ borderRadius: '50%' }}
+                >
+                  <img
+                    src="/logo.png?v=3"
+                    alt="BHU-NIRIKSHAN Official Emblem"
+                    className="w-full h-full object-contain"
+                    style={{ borderRadius: '50%' }}
+                  />
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-[var(--color-gov-navy)] tracking-tight">
-                    BHU-NIRIKSHAN
-                  </h1>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    National Land Acquisition Management System
-                  </p>
-                </div>
+                <h1 className="text-[20px] font-bold text-[#1B365D] tracking-tight">
+                  {mode === 'login'
+                    ? 'BHU-NIRIKSHAN User Login'
+                    : mode === 'register'
+                    ? 'Citizen / Landowner Registration'
+                    : 'Account Verification'}
+                </h1>
+                <p className="text-xs text-slate-500 font-medium">
+                  Official Government Portal
+                </p>
+                <div className="w-20 h-[3px] bg-[#FE932C] mx-auto mt-1.5" style={{ borderRadius: '9999px' }}></div>
               </div>
 
               {/* Mode Navigation Tabs (Login vs Citizen Register) */}
@@ -440,7 +451,7 @@ function LoginContent() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-slate-800 transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
+                    className="w-full py-2.5 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-slate-800 transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
                   >
                     {loading ? (
                       <span>Authenticating Credentials...</span>
@@ -451,6 +462,29 @@ function LoginContent() {
                       </>
                     )}
                   </button>
+
+                  <div className="pt-2 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('register');
+                        setError('');
+                        setSuccessMsg('');
+                      }}
+                      className="w-full py-2.5 border-2 border-[var(--color-gov-navy)] text-[var(--color-gov-navy)] text-xs font-bold uppercase tracking-wider rounded hover:bg-blue-50/60 transition-colors cursor-pointer"
+                    >
+                      Register as Citizen / Landowner
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCredsModal(true)}
+                      className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-amber-600">vpn_key</span>
+                      <span>🔑 View Actor Credentials & Passwords Directory</span>
+                    </button>
+                  </div>
                 </form>
               )}
 
@@ -683,80 +717,18 @@ function LoginContent() {
           </div>
 
           {/* ============================================================
-              RIGHT COLUMN: Application Visual / Illustration (GIS & Governance)
+              RIGHT COLUMN: Application Visual / Illustration (GIS & Cadastral)
+              (Pure visual showcase — zero text overlay)
              ============================================================ */}
-          <div className="lg:col-span-6 xl:col-span-7 bg-gradient-to-br from-[#0d233a] via-[#102a45] to-[#0a1928] p-6 sm:p-10 flex flex-col justify-between text-white relative overflow-hidden">
-            {/* Background Map Art */}
-            <div className="absolute inset-0 opacity-25 pointer-events-none">
-              <Image
-                src="/assets/auth_hero.jpg"
-                alt="BHU-NIRIKSHAN GIS & Land Governance Illustration"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-
-            {/* Header Content on Hero */}
-            <div className="relative z-10 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-amber-300 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                Statutory Land Acquisition Engine
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight leading-snug">
-                Transparent, Automated & GIS-Integrated Land Governance
-              </h2>
-
-              <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-                Empowering Requisite Agencies, District Collectors, Forest Officers, and Citizens under India&apos;s RFCTLARR Act (2013) with real-time vector overlay, valuation auditing, and direct statutory benefit transfers.
-              </p>
-            </div>
-
-            {/* Middle Feature Cards Grid */}
-            <div className="relative z-10 grid grid-cols-2 gap-3 my-6">
-              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                <div className="text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                  Cadastral GIS
-                </div>
-                <div className="text-xs text-slate-200">
-                  Automated corridor buffer intersection and RoW calculation.
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                <div className="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
-                  Statutory Trust
-                </div>
-                <div className="text-xs text-slate-200">
-                  Role-based approvals with sealed audit log ledgers.
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                <div className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-1">
-                  Public Portal
-                </div>
-                <div className="text-xs text-slate-200">
-                  Citizen verification via WhatsApp Cloud API & Govt Email.
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                <div className="text-purple-400 font-bold text-xs uppercase tracking-wider mb-1">
-                  DBT Transparency
-                </div>
-                <div className="text-xs text-slate-200">
-                  Direct compensation disbursements without administrative delays.
-                </div>
-              </div>
-            </div>
-
-            {/* Hero Footer */}
-            <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between text-[11px] text-slate-400 gap-2">
-              <div>Designed for Digital India Land Records Modernization</div>
-              <div className="font-mono text-amber-300">NIC · MoRD · MoRTH</div>
-            </div>
+          <div className="hidden lg:block lg:col-span-6 xl:col-span-7 relative bg-[#0a1928] overflow-hidden min-h-[640px]">
+            <Image
+              src="/assets/auth_hero.jpg"
+              alt="BHU-NIRIKSHAN National Land Acquisition Management System"
+              fill
+              className="object-cover object-center"
+              priority
+              sizes="(min-width: 1024px) 60vw, 100vw"
+            />
           </div>
 
         </div>

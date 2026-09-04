@@ -35,9 +35,11 @@ const AUTH_STORAGE_KEY = 'bhu_drishti_auth_session';
 const ACCESS_TOKEN_KEY = 'bhu_access_token';
 const REFRESH_TOKEN_KEY = 'bhu_refresh_token';
 
-// Helper to determine API base URL
+// Helper to determine API base URL safely (strips trailing /api/v1 so paths never duplicate)
 const getApiBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  let url = (process.env.NEXT_PUBLIC_API_BASE_URL || '').trim();
+  url = url.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+  return url;
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
