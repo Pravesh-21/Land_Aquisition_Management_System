@@ -35,10 +35,11 @@ const AUTH_STORAGE_KEY = 'bhu_drishti_auth_session';
 const ACCESS_TOKEN_KEY = 'bhu_access_token';
 const REFRESH_TOKEN_KEY = 'bhu_refresh_token';
 
-// Helper to determine API base URL safely (strips trailing /api/v1 so paths never duplicate)
+// Helper to determine API base URL safely (strips trailing /api/v1 and normalizes localhost to 127.0.0.1)
 const getApiBaseUrl = () => {
   let url = (process.env.NEXT_PUBLIC_API_BASE_URL || '').trim();
   url = url.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+  url = url.replace('//localhost:8000', '//127.0.0.1:8000');
   return url;
 };
 
