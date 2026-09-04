@@ -14,15 +14,19 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  loginWithBackend: (emailOrId: string, passwordOrOtp?: string) => Promise<{ success: boolean; role?: UserRole; message?: string }>;
+  loginWithBackend: (emailOrId: string, passwordOrOtp?: string) => Promise<{ success: boolean; role?: UserRole; message?: string; requiresVerification?: boolean }>;
   login: (role: UserRole, email?: string, password?: string) => Promise<boolean>;
-  register: (user: MockUser, role: UserRole, password?: string) => Promise<boolean>;
+  register: (user: MockUser, role: UserRole, password?: string) => Promise<{ success: boolean; requiresVerification?: boolean; message?: string }>;
   logout: () => void;
   canAccessRole: (requiredRole: UserRole) => boolean;
   hasPermission: (permission: string) => boolean;
   changePassword: (oldPassword: string, newPassword: string, confirmPassword: string) => Promise<{ success: boolean; message: string }>;
   revokeAllSessions: () => Promise<{ success: boolean; message: string }>;
   getUserSessions: () => Promise<any[]>;
+  sendVerificationOtp: (channel: 'EMAIL' | 'WHATSAPP') => Promise<{ success: boolean; maskedDestination?: string; cooldown?: number; message?: string }>;
+  verifyOtp: (channel: 'EMAIL' | 'WHATSAPP', otp: string) => Promise<{ success: boolean; user?: any; message?: string }>;
+  resendOtp: (channel: 'EMAIL' | 'WHATSAPP') => Promise<{ success: boolean; maskedDestination?: string; cooldown?: number; message?: string }>;
+  getVerificationStatus: () => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       department: backendUser.departments?.length ? backendUser.departments.join(', ') : (config ? config.user.department : 'Government of India'),
       email: backendUser.email,
       phone: backendUser.phone || undefined,
+      is_verified: backendUser.is_verified ?? false,
     };
   }, []);
 
@@ -149,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithBackend = async (
     emailOrId: string,
     passwordOrOtp?: string
-  ): Promise<{ success: boolean; role?: UserRole; message?: string }> => {
+  ): Promise<{ success: boolean; role?: UserRole; message?: string; requiresVerification?: boolean }> => {
     const identifier = emailOrId.trim();
     const providedPassword = passwordOrOtp || '';
 
@@ -183,6 +188,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isLoaded: true,
         });
 
+        // If Citizen account is unverified, inform the login flow to prompt verification
+        if (primaryRole === 'CITIZEN' && !data.user.is_verified) {
+          return {
+            success: true,
+            role: primaryRole,
+            requiresVerification: true,
+            message: 'Account verification required before dashboard access.',
+          };
+        }
+
         return { success: true, role: primaryRole };
       } else {
         const errData = await response.json().catch(() => ({}));
@@ -209,7 +224,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Public Citizen Registration via Backend
-  const register = async (newUser: MockUser, selectedRole: UserRole, password?: string): Promise<boolean> => {
+  const register = async (
+    newUser: MockUser,
+    selectedRole: UserRole,
+    password?: string
+  ): Promise<{ success: boolean; requiresVerification?: boolean; message?: string }> => {
     try {
       const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/register`, {
         method: 'POST',
@@ -242,12 +261,143 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isAuthenticated: true,
           isLoaded: true,
         });
-        return true;
+
+        return {
+          success: true,
+          requiresVerification: true,
+          message: 'Account created. Please verify your contact to continue.',
+        };
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          message: errData.detail || 'Citizen registration failed.',
+        };
       }
-      return false;
     } catch (err) {
       console.error('Citizen registration error:', err);
-      return false;
+      return {
+        success: false,
+        message: 'Network error submitting registration.',
+      };
+    }
+  };
+
+  // --- Verification API Methods ---
+  const sendVerificationOtp = async (
+    channel: 'EMAIL' | 'WHATSAPP'
+  ): Promise<{ success: boolean; maskedDestination?: string; cooldown?: number; message?: string }> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/verification/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ channel }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        return {
+          success: true,
+          maskedDestination: data.masked_destination,
+          cooldown: data.cooldown_seconds || 60,
+          message: data.message,
+        };
+      } else {
+        return {
+          success: false,
+          message: data.detail || 'Failed to dispatch verification code.',
+        };
+      }
+    } catch (err) {
+      return { success: false, message: 'Network error requesting verification code.' };
+    }
+  };
+
+  const verifyOtp = async (
+    channel: 'EMAIL' | 'WHATSAPP',
+    otp: string
+  ): Promise<{ success: boolean; user?: any; message?: string }> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/verification/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ channel, otp }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        // Update user state to verified
+        if (authState.user) {
+          const updatedUser: MockUser = { ...authState.user, is_verified: true };
+          setAuthState((prev) => ({ ...prev, user: updatedUser }));
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ role: authState.role, user: updatedUser }));
+        }
+        return { success: true, user: data.user, message: data.message };
+      } else {
+        return { success: false, message: data.detail || 'OTP verification failed.' };
+      }
+    } catch (err) {
+      return { success: false, message: 'Network error validating verification code.' };
+    }
+  };
+
+  const resendOtp = async (
+    channel: 'EMAIL' | 'WHATSAPP'
+  ): Promise<{ success: boolean; maskedDestination?: string; cooldown?: number; message?: string }> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/verification/resend`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ channel }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        return {
+          success: true,
+          maskedDestination: data.masked_destination,
+          cooldown: data.cooldown_seconds || 60,
+          message: data.message,
+        };
+      } else {
+        return {
+          success: false,
+          message: data.detail || 'Failed to resend code.',
+        };
+      }
+    } catch (err) {
+      return { success: false, message: 'Network error resending verification code.' };
+    }
+  };
+
+  const getVerificationStatus = async (): Promise<any> => {
+    try {
+      const token = authState.token || localStorage.getItem(ACCESS_TOKEN_KEY);
+      const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/verification/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      return null;
+    } catch {
+      return null;
     }
   };
 
@@ -375,6 +525,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         changePassword,
         revokeAllSessions,
         getUserSessions,
+        sendVerificationOtp,
+        verifyOtp,
+        resendOtp,
+        getVerificationStatus,
       }}
     >
       {children}

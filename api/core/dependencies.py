@@ -85,3 +85,16 @@ def require_permission(*required_permissions: str) -> Callable:
         return current_user
 
     return permission_checker
+
+
+def require_verified_citizen(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Ensure that a Citizen user has completed statutory Email or WhatsApp account verification.
+    Authorities (officers created by ADMIN) are verified by statutory appointment.
+    """
+    if current_user.has_role("CITIZEN") and not current_user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account unverified. Citizen must complete Email or WhatsApp OTP verification before accessing this resource.",
+        )
+    return current_user

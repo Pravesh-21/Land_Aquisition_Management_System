@@ -39,6 +39,7 @@ export interface MockUser {
   avatar?: string;
   aadhaar?: string;
   phone?: string;
+  is_verified?: boolean;
 }
 
 // --- Land Parcel ---

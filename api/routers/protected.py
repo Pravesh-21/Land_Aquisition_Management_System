@@ -1,5 +1,10 @@
 from fastapi import APIRouter, Depends
-from api.core.dependencies import get_current_user, require_role, require_permission
+from api.core.dependencies import (
+    get_current_user,
+    require_role,
+    require_permission,
+    require_verified_citizen,
+)
 from api.models.user import User
 
 router = APIRouter(prefix="/api/v1/protected", tags=["Protected Verification Endpoints"])
@@ -47,10 +52,21 @@ def test_project_approve(current_user: User = Depends(require_permission("PROJEC
 
 
 @router.get("/audit")
-def test_audit_view(current_user: User = Depends(require_permission("AUDIT_VIEW"))):
+def test_audit_access(current_user: User = Depends(require_permission("AUDIT_VIEW"))):
     """Requires AUDIT_VIEW permission."""
     return {
         "status": "success",
         "message": "Authorized for AUDIT_VIEW",
         "user": current_user.username,
+    }
+
+
+@router.get("/citizen-access")
+def test_citizen_access(current_user: User = Depends(require_verified_citizen)):
+    """Requires verified citizen account."""
+    return {
+        "status": "success",
+        "message": "Verified citizen access granted.",
+        "user": current_user.username,
+        "is_verified": current_user.is_verified,
     }

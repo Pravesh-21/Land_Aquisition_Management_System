@@ -8,7 +8,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from api.core.config import settings
-from api.routers import auth_router, protected_router, users_router, admin_router
+from api.routers import (
+    auth_router,
+    protected_router,
+    users_router,
+    admin_router,
+    verification_router,
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -34,6 +40,7 @@ app.include_router(auth_router)
 app.include_router(protected_router)
 app.include_router(users_router)
 app.include_router(admin_router)
+app.include_router(verification_router)
 
 
 # --- System Health Check ---

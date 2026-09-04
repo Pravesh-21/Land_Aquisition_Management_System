@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/contexts/RoleContext';
 import { UserRole, MockUser } from '@/types';
@@ -82,10 +83,10 @@ const OFFICIAL_CREDENTIALS = [
 
 function LoginContent() {
   const router = useRouter();
-  const { loginWithBackend, register } = useAuth();
+  const { loginWithBackend, register, sendVerificationOtp, verifyOtp, resendOtp } = useAuth();
   const { setCurrentRole } = useRole();
 
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'verify'>('login');
 
   // Login form state
   const [emailOrId, setEmailOrId] = useState('');
@@ -99,13 +100,35 @@ function LoginContent() {
   // Register form state (Citizen only)
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
   const [regAadhaar, setRegAadhaar] = useState('');
   const [regDistrict, setRegDistrict] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
 
+  // Verification state
+  const [verificationChannel, setVerificationChannel] = useState<'WHATSAPP' | 'EMAIL'>('WHATSAPP');
+  const [maskedDestination, setMaskedDestination] = useState<string>('');
+  const [otpValue, setOtpValue] = useState<string>('');
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [verificationInfo, setVerificationInfo] = useState<string>('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  // Resend countdown timer
+  useEffect(() => {
+    let timer: any = null;
+    if (cooldownRemaining > 0) {
+      timer = setInterval(() => {
+        setCooldownRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [cooldownRemaining]);
 
   // Handle Login via Backend Database
   const handleLogin = async (e: React.FormEvent) => {
@@ -115,25 +138,55 @@ function LoginContent() {
       return;
     }
     setError('');
+    setSuccessMsg('');
     setLoading(true);
 
     try {
       const res = await loginWithBackend(emailOrId, password);
       if (res.success && res.role) {
         setCurrentRole(res.role);
+
+        // If unverified citizen, trigger in-card verification view
+        if (res.requiresVerification) {
+          setMode('verify');
+          setLoading(false);
+          const channel = regPhone ? 'WHATSAPP' : 'EMAIL';
+          setVerificationChannel(channel);
+          requestOtpForChannel(channel);
+          return;
+        }
+
         setLoading(false);
         router.push(`/dashboard/${res.role.toLowerCase()}`);
       } else {
         setError(res.message || 'Invalid User ID or Password. Please check your credentials.');
         setLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError('Authentication service error. Please check your credentials.');
       setLoading(false);
     }
   };
 
-  // Handle Citizen Registration -> Save to Database as CITIZEN
+  // Helper to request OTP for a specific channel
+  const requestOtpForChannel = async (channel: 'WHATSAPP' | 'EMAIL') => {
+    setError('');
+    setSuccessMsg('');
+    try {
+      const res = await sendVerificationOtp(channel);
+      if (res.success) {
+        setMaskedDestination(res.maskedDestination || '');
+        setCooldownRemaining(res.cooldown || 60);
+        setVerificationInfo(`Verification code dispatched to ${channel}.`);
+      } else {
+        setError(res.message || `Failed to dispatch ${channel} verification code.`);
+      }
+    } catch {
+      setError(`Network error dispatching ${channel} verification code.`);
+    }
+  };
+
+  // Handle Citizen Registration -> Transition to In-Card Verification
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName || !regEmail || !regPassword) {
@@ -141,6 +194,7 @@ function LoginContent() {
       return;
     }
     setError('');
+    setSuccessMsg('');
     setLoading(true);
 
     const citizenRole: UserRole = 'CITIZEN';
@@ -149,45 +203,83 @@ function LoginContent() {
       email: regEmail.trim().toLowerCase(),
       designation: 'Landowner',
       department: regDistrict.trim() ? `Landowner (${regDistrict.trim()})` : 'Citizen G2C',
+      phone: regPhone.trim() || undefined,
       aadhaar: regAadhaar.trim() || undefined,
     };
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register` : '/api/v1/auth/register';
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: citizenUser.name,
-          email: citizenUser.email,
-          password: regPassword,
-          role: citizenRole,
-          designation: citizenUser.designation,
-          department: citizenUser.department,
-          aadhaar_or_id: regAadhaar.trim() || null,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const newUser: MockUser = data.user;
-        await register(newUser, citizenRole, regPassword);
+      const res = await register(citizenUser, citizenRole, regPassword);
+      if (res.success) {
         setCurrentRole(citizenRole);
         setLoading(false);
-        router.push('/dashboard/citizen');
-        return;
+
+        // Transition seamlessly into in-card verification step
+        setMode('verify');
+        const defaultChannel = regPhone.trim() ? 'WHATSAPP' : 'EMAIL';
+        setVerificationChannel(defaultChannel);
+        requestOtpForChannel(defaultChannel);
       } else {
-        const errData = await response.json();
-        setError(errData.detail || 'Registration failed.');
+        setError(res.message || 'Registration failed. Please check your details.');
+        setLoading(false);
       }
-    } catch (err) {
-      await register(citizenUser, citizenRole, regPassword);
-      setCurrentRole(citizenRole);
+    } catch {
+      setError('Registration error. Please check your input.');
       setLoading(false);
-      router.push('/dashboard/citizen');
+    }
+  };
+
+  // Handle Channel Switch in Verification View
+  const handleChannelSwitch = (newChannel: 'WHATSAPP' | 'EMAIL') => {
+    setVerificationChannel(newChannel);
+    setOtpValue('');
+    requestOtpForChannel(newChannel);
+  };
+
+  // Handle OTP Resend
+  const handleResendOtp = async () => {
+    if (cooldownRemaining > 0) return;
+    setError('');
+    setSuccessMsg('');
+    try {
+      const res = await resendOtp(verificationChannel);
+      if (res.success) {
+        setMaskedDestination(res.maskedDestination || '');
+        setCooldownRemaining(res.cooldown || 60);
+        setSuccessMsg(`Fresh verification code sent via ${verificationChannel}.`);
+      } else {
+        setError(res.message || 'Resend cooldown in effect.');
+      }
+    } catch {
+      setError('Network error requesting OTP resend.');
+    }
+  };
+
+  // Handle OTP Submission
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpValue || otpValue.trim().length !== 6) {
+      setError('Please enter the complete 6-digit verification code.');
       return;
     }
-    setLoading(false);
+    setError('');
+    setSuccessMsg('');
+    setLoading(true);
+
+    try {
+      const res = await verifyOtp(verificationChannel, otpValue.trim());
+      if (res.success) {
+        setSuccessMsg('Account verified successfully! Redirecting to Citizen Portal...');
+        setTimeout(() => {
+          router.push('/dashboard/citizen');
+        }, 800);
+      } else {
+        setError(res.message || 'Invalid or expired verification code.');
+        setLoading(false);
+      }
+    } catch {
+      setError('Network error validating verification code.');
+      setLoading(false);
+    }
   };
 
   // Autofill credentials from Overview modal
@@ -196,352 +288,562 @@ function LoginContent() {
     setPassword(pass);
     setShowCredsModal(false);
     setError('');
-  };
-
-  const toggleRevealPassword = (roleKey: string) => {
-    setRevealedPasswords((prev) => ({
-      ...prev,
-      [roleKey]: !prev[roleKey],
-    }));
+    setMode('login');
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F6FE] flex flex-col justify-between font-sans">
-      {/* Top Banner */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-xs font-medium text-slate-600">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-800">Government of India</span>
-            <span className="border-l border-slate-300 h-3"></span>
-            <span>Ministry of Rural Development</span>
-          </div>
-          <div className="text-[11px] font-bold text-[#003178]">
-            BHU-NIRIKSHAN PORTAL
-          </div>
+    <div className="min-h-screen bg-slate-100 flex flex-col justify-between">
+      {/* Top Government Strip */}
+      <header className="bg-[var(--color-gov-navy)] text-white text-[11px] px-4 py-1.5 flex items-center justify-between border-b border-slate-700">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold tracking-wider">भारत सरकार | Government of India</span>
+          <span className="text-slate-400">·</span>
+          <span className="text-slate-300">Ministry of Rural Development & Ministry of Road Transport</span>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <button
+            type="button"
+            onClick={() => setShowCredsModal(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded text-[11px] font-semibold hover:bg-amber-400/30 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[14px]">vpn_key</span>
+            Official Credentials Directory
+          </button>
         </div>
       </header>
 
-      {/* Main Container - Centered MCA / MyGov Style Card */}
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-[540px] relative mt-8">
-
-          {/* Centered Circular Emblem Header */}
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
-            <div className="w-24 h-24 rounded-full bg-white border-2 border-[#0072BC] shadow-md flex items-center justify-center p-0.5 overflow-hidden">
-              <img src="/logo.png?v=3" alt="Bhu Nirikshan Emblem" className="w-full h-full object-contain rounded-full" />
-            </div>
-          </div>
-
-          {/* MCA Portal Card Container */}
-          <div className="bg-white rounded-t-[36px] rounded-b-[16px] shadow-lg border border-blue-100 pt-16 pb-8 px-10 space-y-6">
-
-            {/* Title Section */}
-            <div className="text-center space-y-1">
-              <h1 className="text-[22px] font-bold text-[#1B365D] tracking-tight">
-                {mode === 'login' ? 'BHU-NIRIKSHAN User Login' : 'Citizen / Landowner Registration'}
-              </h1>
-              <p className="text-xs text-slate-500 font-medium">
-                Official Government Portal
-              </p>
-              <div className="w-24 h-[3px] bg-[#FE932C] mx-auto rounded-full mt-2"></div>
-            </div>
-
-            {error && (
-              <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-center">
-                {error}
+      {/* Main 2-Column Responsive Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="w-full bg-white border border-slate-200 rounded-xl shadow-md overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
+          
+          {/* ============================================================
+              LEFT COLUMN: Form (Login / Register / Verification)
+             ============================================================ */}
+          <div className="lg:col-span-6 xl:col-span-5 p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200">
+            <div>
+              {/* Brand Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-[var(--color-gov-navy)] text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                  भृ
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-[var(--color-gov-navy)] tracking-tight">
+                    BHU-NIRIKSHAN
+                  </h1>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    National Land Acquisition Management System
+                  </p>
+                </div>
               </div>
-            )}
 
-            {/* LOGIN FORM MODE */}
-            {mode === 'login' ? (
-              <form onSubmit={handleLogin} className="space-y-5 text-sm pt-2">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    User ID
-                  </label>
-                  <div className="text-[11px] text-slate-500 mb-1">
-                    (Official Email ID for Officers, or Aadhaar / Email for Citizens)
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Enter User ID or Email"
-                    value={emailOrId}
-                    onChange={(e) => setEmailOrId(e.target.value)}
-                    className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-[#0072BC] focus:outline-none transition-colors"
-                    required
-                  />
-                  <div className="text-right">
-                    <button type="button" className="text-xs text-[#0072BC] hover:underline font-medium">
-                      Forgot User ID ?
-                    </button>
-                  </div>
+              {/* Mode Navigation Tabs (Login vs Citizen Register) */}
+              {mode !== 'verify' && (
+                <div className="flex border-b border-slate-200 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('login');
+                      setError('');
+                      setSuccessMsg('');
+                    }}
+                    className={`flex-1 py-2.5 text-xs font-semibold text-center border-b-2 transition-colors ${
+                      mode === 'login'
+                        ? 'border-[var(--color-gov-navy)] text-[var(--color-gov-navy)]'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Official & Citizen Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('register');
+                      setError('');
+                      setSuccessMsg('');
+                    }}
+                    className={`flex-1 py-2.5 text-xs font-semibold text-center border-b-2 transition-colors ${
+                      mode === 'register'
+                        ? 'border-[var(--color-gov-navy)] text-[var(--color-gov-navy)]'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Citizen / Landowner Registration
+                  </button>
                 </div>
+              )}
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2.5 pr-10 text-sm text-slate-800 focus:bg-white focus:border-[#0072BC] focus:outline-none transition-colors"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 flex items-center justify-center cursor-pointer"
-                      title={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        {showPassword ? 'visibility_off' : 'visibility'}
+              {/* Alert Feedback Messages */}
+              {error && (
+                <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded text-xs flex items-start gap-2">
+                  <span className="material-symbols-outlined text-base mt-0.5 text-rose-600">error</span>
+                  <div className="flex-1">{error}</div>
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded text-xs flex items-start gap-2">
+                  <span className="material-symbols-outlined text-base mt-0.5 text-emerald-600">check_circle</span>
+                  <div className="flex-1">{successMsg}</div>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------
+                  MODE 1: SIGN IN FORM
+                 ------------------------------------------------------------ */}
+              {mode === 'login' && (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      User ID or Official Email
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. agency, collector, or user@gov.in"
+                        value={emailOrId}
+                        onChange={(e) => setEmailOrId(e.target.value)}
+                        className="w-full px-3 py-2 pl-9 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-[var(--color-gov-navy)] focus:outline-none"
+                      />
+                      <span className="material-symbols-outlined absolute left-2.5 top-2 text-slate-400 text-base">
+                        person
                       </span>
-                    </button>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <button type="button" className="text-xs text-[#0072BC] hover:underline font-medium">
-                      Forgot Password ?
-                    </button>
-                  </div>
-                </div>
 
-                {/* Primary Action Buttons */}
-                <div className="space-y-3 pt-2">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-700">Password</label>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-[11px] text-[var(--color-gov-navy)] hover:underline font-medium"
+                      >
+                        {showPassword ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Enter account password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-3 py-2 pl-9 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-[var(--color-gov-navy)] focus:outline-none"
+                      />
+                      <span className="material-symbols-outlined absolute left-2.5 top-2 text-slate-400 text-base">
+                        lock
+                      </span>
+                    </div>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[#0072BC] hover:bg-[#005c99] text-white font-bold text-sm rounded transition-colors shadow-sm uppercase tracking-wide cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-slate-800 transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
                   >
-                    {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-                    <span>{loading ? 'Authenticating...' : 'Login'}</span>
+                    {loading ? (
+                      <span>Authenticating Credentials...</span>
+                    ) : (
+                      <>
+                        <span>Sign In to Portal</span>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </>
+                    )}
                   </button>
+                </form>
+              )}
 
-                  <button
-                    type="button"
-                    onClick={() => { setMode('register'); setError(''); }}
-                    className="w-full py-3 bg-white border-2 border-[#0072BC] text-[#0072BC] hover:bg-blue-50 font-bold text-sm rounded transition-colors uppercase tracking-wide cursor-pointer"
-                  >
-                    Register as Citizen / Landowner
-                  </button>
-
-                  {/* Hidden Password Overview Button */}
-                  <div className="pt-2 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => setShowCredsModal(true)}
-                      className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded border border-slate-300 transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[18px] text-[var(--color-gov-navy)]">key</span>
-                      <span>🔑 View Actor Credentials & Passwords Directory</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            ) : (
-              /* CITIZEN REGISTRATION FORM MODE */
-              <form onSubmit={handleRegister} className="space-y-4 text-sm pt-2">
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Full Name (as per Aadhaar / Land Record) *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sh. Rajendra Patel"
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="e.g. rajendra.patel@gmail.com"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Aadhaar Number / ID
+              {/* ------------------------------------------------------------
+                  MODE 2: CITIZEN REGISTRATION FORM
+                 ------------------------------------------------------------ */}
+              {mode === 'register' && (
+                <form onSubmit={handleRegister} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Full Legal Name <span className="text-rose-600">*</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="XXXX XXXX 4920"
-                      value={regAadhaar}
-                      onChange={(e) => setRegAadhaar(e.target.value)}
-                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      District / Tehsil
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Nagpur Rural"
-                      value={regDistrict}
-                      onChange={(e) => setRegDistrict(e.target.value)}
-                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Create Password *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showRegPassword ? 'text' : 'password'}
-                      placeholder="Choose a secure password"
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      className="w-full bg-[#F5F7FA] border border-slate-300 rounded px-3 py-2 pr-10 text-sm focus:bg-white focus:border-[#0072BC] focus:outline-none"
                       required
+                      placeholder="e.g. Sh. Rajendra Patel"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-[var(--color-gov-navy)]"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowRegPassword(!showRegPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 flex items-center justify-center cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        {showRegPassword ? 'visibility_off' : 'visibility'}
-                      </span>
-                    </button>
                   </div>
-                </div>
 
-                <div className="space-y-3 pt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Email Address <span className="text-rose-600">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="e.g. rajendra@example.com"
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        className="w-full px-3 py-1.5 border border-slate-300 rounded text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        WhatsApp / Mobile No.
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="+91 98225 66778"
+                        value={regPhone}
+                        onChange={(e) => setRegPhone(e.target.value)}
+                        className="w-full px-3 py-1.5 border border-slate-300 rounded text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Aadhaar / Land Title Ref
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="12-digit UID or Survey No."
+                        value={regAadhaar}
+                        onChange={(e) => setRegAadhaar(e.target.value)}
+                        className="w-full px-3 py-1.5 border border-slate-300 rounded text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">District / Tehsil</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Nagpur / Sikar"
+                        value={regDistrict}
+                        onChange={(e) => setRegDistrict(e.target.value)}
+                        className="w-full px-3 py-1.5 border border-slate-300 rounded text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-700">
+                        Password <span className="text-rose-600">*</span>
+                      </label>
+                      <span className="text-[10px] text-slate-400">Min 8 chars, A-Z, 0-9, symbol</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showRegPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Create strong account password"
+                        value={regPassword}
+                        onChange={(e) => setRegPassword(e.target.value)}
+                        className="w-full px-3 py-1.5 border border-slate-300 rounded text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 italic">
+                    Note: Only Citizen accounts can self-register. Government authorities are provisioned by NIC Administration.
+                  </p>
+
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white font-bold text-sm rounded transition-colors shadow-sm uppercase tracking-wide cursor-pointer"
+                    className="w-full py-2 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-slate-800 transition-colors shadow-xs disabled:opacity-60"
                   >
-                    {loading ? 'Creating Citizen Account...' : 'Complete Registration & Access Portal'}
+                    {loading ? 'Creating Citizen Account...' : 'Continue to Account Verification'}
                   </button>
+                </form>
+              )}
 
-                  <button
-                    type="button"
-                    onClick={() => { setMode('login'); setError(''); }}
-                    className="w-full py-2.5 text-slate-600 hover:text-slate-900 font-semibold text-xs text-center block"
-                  >
-                    ← Back to Official Login
-                  </button>
+              {/* ------------------------------------------------------------
+                  MODE 3: IN-CARD OTP VERIFICATION SCREEN
+                 ------------------------------------------------------------ */}
+              {mode === 'verify' && (
+                <div className="space-y-4">
+                  <div className="border-b border-slate-200 pb-3">
+                    <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded mb-1">
+                      <span className="material-symbols-outlined text-[14px]">verified_user</span>
+                      Statutory Account Verification
+                    </div>
+                    <h2 className="text-lg font-bold text-[var(--color-gov-navy)]">
+                      Verify your citizen account
+                    </h2>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Verify your registered contact to activate portal access under RFCTLARR Act (2013).
+                    </p>
+                  </div>
+
+                  {/* Channel Selector Dropdown */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Choose verification channel
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={verificationChannel}
+                        onChange={(e) => handleChannelSwitch(e.target.value as 'WHATSAPP' | 'EMAIL')}
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-xs bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[var(--color-gov-navy)] cursor-pointer"
+                      >
+                        <option value="WHATSAPP">WhatsApp (Secure OTP)</option>
+                        <option value="EMAIL">Email (Government Mail)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Masked destination feedback */}
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1">
+                    <div className="text-slate-500">
+                      We sent a 6-digit statutory code to your registered contact:
+                    </div>
+                    <div className="font-mono font-bold text-slate-800 text-sm">
+                      {verificationChannel === 'WHATSAPP' ? 'WhatsApp: ' : 'Email: '}
+                      {maskedDestination || (verificationChannel === 'WHATSAPP' ? '+91 ******1123' : 'p******@gmail.com')}
+                    </div>
+                    {verificationInfo && (
+                      <div className="text-[11px] text-emerald-700 font-medium">{verificationInfo}</div>
+                    )}
+                  </div>
+
+                  {/* OTP Input Form */}
+                  <form onSubmit={handleVerifyOtp} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Enter 6-digit Verification Code
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        autoFocus
+                        placeholder="1 2 3 4 5 6"
+                        value={otpValue}
+                        onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
+                        className="w-full text-center tracking-[8px] font-mono text-xl py-2.5 px-3 border border-slate-300 rounded focus:ring-2 focus:ring-[var(--color-gov-navy)] focus:outline-none bg-white font-bold"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      {cooldownRemaining > 0 ? (
+                        <span className="text-slate-500 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">timer</span>
+                          Resend code in 00:{cooldownRemaining < 10 ? `0${cooldownRemaining}` : cooldownRemaining}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleResendOtp}
+                          className="text-[var(--color-gov-navy)] font-semibold hover:underline"
+                        >
+                          Resend code
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleChannelSwitch(verificationChannel === 'WHATSAPP' ? 'EMAIL' : 'WHATSAPP')}
+                        className="text-slate-600 hover:text-slate-900 underline text-[11px]"
+                      >
+                        Switch to {verificationChannel === 'WHATSAPP' ? 'Email' : 'WhatsApp'}
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading || otpValue.length !== 6}
+                      className="w-full py-2.5 bg-[var(--color-gov-navy)] text-white text-xs font-semibold rounded hover:bg-slate-800 transition-colors shadow-xs disabled:opacity-50"
+                    >
+                      {loading ? 'Validating Code...' : 'Verify & Continue into Application'}
+                    </button>
+                  </form>
+
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setMode('login')}
+                      className="text-xs text-slate-500 hover:underline"
+                    >
+                      ← Return to Sign In
+                    </button>
+                  </div>
                 </div>
-              </form>
-            )}
+              )}
+            </div>
 
-            {/* MCA Security Badge */}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">
-              <span className="material-symbols-outlined text-[14px]">lock</span>
-              <span>256-Bit SSL Encrypted • Government of India</span>
+            {/* Bottom Security Footer */}
+            <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px] text-emerald-600">lock</span>
+                <span>Argon2id + 256-bit Sealed</span>
+              </div>
+              <div>NIC Standards Compliant</div>
             </div>
           </div>
+
+          {/* ============================================================
+              RIGHT COLUMN: Application Visual / Illustration (GIS & Governance)
+             ============================================================ */}
+          <div className="lg:col-span-6 xl:col-span-7 bg-gradient-to-br from-[#0d233a] via-[#102a45] to-[#0a1928] p-6 sm:p-10 flex flex-col justify-between text-white relative overflow-hidden">
+            {/* Background Map Art */}
+            <div className="absolute inset-0 opacity-25 pointer-events-none">
+              <Image
+                src="/assets/auth_hero.jpg"
+                alt="BHU-NIRIKSHAN GIS & Land Governance Illustration"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+
+            {/* Header Content on Hero */}
+            <div className="relative z-10 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs text-amber-300 font-semibold">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                Statutory Land Acquisition Engine
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight leading-snug">
+                Transparent, Automated & GIS-Integrated Land Governance
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
+                Empowering Requisite Agencies, District Collectors, Forest Officers, and Citizens under India&apos;s RFCTLARR Act (2013) with real-time vector overlay, valuation auditing, and direct statutory benefit transfers.
+              </p>
+            </div>
+
+            {/* Middle Feature Cards Grid */}
+            <div className="relative z-10 grid grid-cols-2 gap-3 my-6">
+              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <div className="text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
+                  Cadastral GIS
+                </div>
+                <div className="text-xs text-slate-200">
+                  Automated corridor buffer intersection and RoW calculation.
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <div className="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
+                  Statutory Trust
+                </div>
+                <div className="text-xs text-slate-200">
+                  Role-based approvals with sealed audit log ledgers.
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <div className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-1">
+                  Public Portal
+                </div>
+                <div className="text-xs text-slate-200">
+                  Citizen verification via WhatsApp Cloud API & Govt Email.
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+                <div className="text-purple-400 font-bold text-xs uppercase tracking-wider mb-1">
+                  DBT Transparency
+                </div>
+                <div className="text-xs text-slate-200">
+                  Direct compensation disbursements without administrative delays.
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Footer */}
+            <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between text-[11px] text-slate-400 gap-2">
+              <div>Designed for Digital India Land Records Modernization</div>
+              <div className="font-mono text-amber-300">NIC · MoRD · MoRTH</div>
+            </div>
+          </div>
+
         </div>
       </main>
 
-      {/* CREDENTIALS & PASSWORDS OVERVIEW MODAL */}
+      {/* Official Credentials Directory Modal */}
       {showCredsModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 space-y-5 shadow-2xl border border-slate-300 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl border border-slate-200 overflow-hidden">
+            <div className="p-4 sm:p-5 bg-[var(--color-gov-navy)] text-white flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-[#0072BC] uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[18px]">vpn_key</span>
-                  Authorized Credentials Directory
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 mt-0.5">
-                  Official Actor Logins & Passwords Overview
+                <h3 className="font-bold text-base flex items-center gap-2">
+                  <span className="material-symbols-outlined text-amber-400 text-lg">admin_panel_settings</span>
+                  Official Authority Credentials Directory
                 </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Pre-configured accounts seeded in PostgreSQL with Argon2id encryption. Click to quick-fill.
+                </p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowCredsModal(false)}
-                className="text-slate-400 hover:text-slate-700 text-2xl font-bold p-1 leading-none"
+                className="text-slate-300 hover:text-white text-lg font-bold p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="text-xs text-slate-600 bg-blue-50 border border-blue-200 p-3 rounded">
-              💡 <strong>Demo Guidance:</strong> Each of the 6 roles has its own distinct official User ID and password. You can inspect passwords below or click <strong>Autofill</strong> to populate the login form instantly.
-            </div>
-
-            {/* Credentials Table / Cards */}
-            <div className="space-y-3">
-              {OFFICIAL_CREDENTIALS.map((cred) => {
-                const isRevealed = !!revealedPasswords[cred.role];
-                return (
-                  <div
-                    key={cred.role}
-                    className="p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 font-bold text-[10px] rounded border uppercase tracking-wider ${cred.badgeColor}`}>
-                          {cred.role}
-                        </span>
-                        <span className="font-bold text-slate-900 text-sm">{cred.title}</span>
-                      </div>
-                      <div className="text-slate-500 text-[11px]">{cred.designation}</div>
-                      <div className="font-mono text-slate-700 pt-0.5">
-                        <span className="font-semibold text-slate-500">User ID:</span>{' '}
-                        <span className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-bold text-[var(--color-gov-navy)]">
-                          {cred.userId}
-                        </span>
-                      </div>
+            <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto space-y-3 divide-y divide-slate-100">
+              {OFFICIAL_CREDENTIALS.map((cred) => (
+                <div key={cred.role} className="pt-3 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${cred.badgeColor}`}>
+                        {cred.role}
+                      </span>
+                      <span className="font-bold text-xs text-slate-900">{cred.title}</span>
                     </div>
-
-                    <div className="flex sm:flex-col items-end gap-2 shrink-0">
-                      {/* Password with Reveal Toggle */}
-                      <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-slate-300 font-mono">
-                        <span className="text-slate-400 text-[10px]">Pass:</span>
-                        <span className="font-bold text-slate-900 min-w-[80px]">
-                          {isRevealed ? cred.password : '••••••••••••'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => toggleRevealPassword(cred.role)}
-                          className="text-slate-400 hover:text-slate-700 p-0.5 ml-1"
-                          title={isRevealed ? 'Hide' : 'Reveal'}
-                        >
-                          <span className="material-symbols-outlined text-[16px]">
-                            {isRevealed ? 'visibility_off' : 'visibility'}
-                          </span>
-                        </button>
-                      </div>
-
-                      {/* 1-Click Autofill Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleAutofill(cred.userId, cred.password)}
-                        className="px-3 py-1 bg-[var(--color-gov-navy)] hover:bg-[var(--color-gov-navy-dark)] text-white font-bold text-[11px] rounded transition-colors uppercase tracking-wider cursor-pointer"
-                      >
-                        Autofill
-                      </button>
+                    <div className="text-[11px] text-slate-500">{cred.designation}</div>
+                    <div className="text-xs font-mono text-slate-700">
+                      ID: <span className="font-semibold text-slate-900">{cred.userId}</span>
+                      <span className="text-slate-400 mx-1">|</span>
+                      Short: <span className="font-semibold">{cred.shortId}</span>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <div className="text-[10px] text-slate-400 uppercase">Password</div>
+                      <div className="font-mono text-xs font-bold text-slate-800">
+                        {revealedPasswords[cred.role] ? cred.password : '••••••••'}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRevealedPasswords({
+                          ...revealedPasswords,
+                          [cred.role]: !revealedPasswords[cred.role],
+                        })
+                      }
+                      className="p-1.5 text-slate-500 hover:text-slate-700 text-xs"
+                      title={revealedPasswords[cred.role] ? 'Hide' : 'Reveal'}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        {revealedPasswords[cred.role] ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleAutofill(cred.shortId, cred.password)}
+                      className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white rounded text-xs font-semibold hover:bg-slate-800 transition-colors"
+                    >
+                      Autofill
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="p-3 bg-slate-50 border-t border-slate-200 text-right">
               <button
                 type="button"
                 onClick={() => setShowCredsModal(false)}
-                className="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold uppercase rounded transition-colors"
+                className="px-4 py-1.5 border border-slate-300 text-slate-700 rounded text-xs font-semibold hover:bg-slate-100"
               >
                 Close Directory
               </button>
@@ -550,16 +852,9 @@ function LoginContent() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500">
-        <div className="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>&copy; {new Date().getFullYear()} National Land Acquisition Management Portal • Government of India</span>
-          <div className="flex gap-4 text-slate-600">
-            <span className="hover:underline cursor-pointer">Security Policy</span>
-            <span className="hover:underline cursor-pointer">Terms of Service</span>
-            <span className="hover:underline cursor-pointer">Helpdesk</span>
-          </div>
-        </div>
+      {/* Global Footer */}
+      <footer className="text-center py-3 text-xs text-slate-500 border-t border-slate-200 bg-white">
+        © 2026 National Informatics Centre (NIC) · Ministry of Rural Development · Government of India
       </footer>
     </div>
   );
@@ -567,7 +862,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F0F6FE] flex items-center justify-center">Loading portal...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-500">Loading Portal...</div>}>
       <LoginContent />
     </Suspense>
   );

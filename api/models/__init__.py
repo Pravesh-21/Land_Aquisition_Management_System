@@ -6,6 +6,7 @@ from api.models.department import Department
 from api.models.refresh_token import RefreshToken
 from api.models.user import User
 from api.models.audit_log import AuthAuditLog
+from api.models.verification_code import VerificationCode
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "RefreshToken",
     "User",
     "AuthAuditLog",
+    "VerificationCode",
 ]

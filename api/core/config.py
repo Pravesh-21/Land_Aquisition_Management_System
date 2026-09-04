@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,6 +36,29 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
     ]
+
+    # --- Verification & OTP Settings ---
+    OTP_EXPIRY_SECONDS: int = 300  # 5 minutes
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60  # 60 seconds cooldown
+    OTP_MAX_ATTEMPTS: int = 5
+    OTP_SECRET_SALT: str = "bhu-nirikshan-otp-salt-secret-key-2026"
+
+    # Email Provider (SMTP)
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM_EMAIL: str = "noreply@bhu-nirikshan.gov.in"
+    SMTP_USE_TLS: bool = True
+
+    # WhatsApp Provider (Meta Cloud API)
+    WHATSAPP_API_URL: str = "https://graph.facebook.com/v21.0"
+    WHATSAPP_PHONE_NUMBER_ID: Optional[str] = None
+    WHATSAPP_ACCESS_TOKEN: Optional[str] = None
+    WHATSAPP_TEMPLATE_NAME: str = "bhu_nirikshan_otp"
+
+    # Testing & Development Mock Provider Flag
+    USE_MOCK_VERIFICATION_PROVIDER: bool = False
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"),
