@@ -722,8 +722,8 @@ function LoginContent() {
              ============================================================ */}
           <div className="hidden lg:block lg:col-span-6 xl:col-span-7 relative bg-[#0a1928] overflow-hidden min-h-[640px]">
             <Image
-              src="/assets/auth_hero.jpg"
-              alt="BHU-NIRIKSHAN National Land Acquisition Management System"
+              src="/assets/auth_hero_real.jpg"
+              alt="BHU-NIRIKSHAN National Land Acquisition Management System - Highway & Cadastral Corridor"
               fill
               className="object-cover object-center"
               priority
