@@ -8,69 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/contexts/RoleContext';
 import { UserRole, MockUser } from '@/types';
 
-// Official Credentials Directory for the Overview Modal
-const OFFICIAL_CREDENTIALS = [
-  {
-    role: 'AGENCY' as UserRole,
-    title: 'Requisite Agency (NHAI)',
-    designation: 'Project Director (PIU Nagpur)',
-    userId: 'agency@gov.in',
-    shortId: 'agency@gov.in',
-    password: 'password123',
-    badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
-    targetRoute: '/dashboard/agency',
-  },
-  {
-    role: 'LAO' as UserRole,
-    title: 'Land Acquisition Officer (LAO)',
-    designation: 'Competent Authority (Pune Division)',
-    userId: 'lao@gov.in',
-    shortId: 'lao@gov.in',
-    password: 'password123',
-    badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
-    targetRoute: '/dashboard/lao',
-  },
-  {
-    role: 'FOREST' as UserRole,
-    title: 'Forest & Environment (MoEFCC)',
-    designation: 'Divisional Forest Officer (DFO)',
-    userId: 'forest@gov.in',
-    shortId: 'forest@gov.in',
-    password: 'password123',
-    badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-    targetRoute: '/dashboard/forest',
-  },
-  {
-    role: 'COLLECTOR' as UserRole,
-    title: 'District Collector (IAS)',
-    designation: 'District Magistrate & Sanctioning Authority',
-    userId: 'collector@gov.in',
-    shortId: 'collector@gov.in',
-    password: 'password123',
-    badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
-    targetRoute: '/dashboard/collector',
-  },
-  {
-    role: 'TEHSILDAR' as UserRole,
-    title: 'Revenue Court / Tehsildar',
-    designation: 'Executive Magistrate & Dispute Resolver',
-    userId: 'tehsildar@gov.in',
-    shortId: 'tehsildar@gov.in',
-    password: 'password123',
-    badgeColor: 'bg-rose-100 text-rose-900 border-rose-300',
-    targetRoute: '/dashboard/tehsildar',
-  },
-  {
-    role: 'CITIZEN' as UserRole,
-    title: 'Citizen / Landowner',
-    designation: 'Verified Title Holder (Sh. Rajendra Patel)',
-    userId: 'citizen@gov.in',
-    shortId: 'citizen@gov.in',
-    password: 'password123',
-    badgeColor: 'bg-teal-100 text-teal-900 border-teal-300',
-    targetRoute: '/dashboard/citizen',
-  },
-];
 
 function LoginContent() {
   const router = useRouter();
@@ -84,9 +21,6 @@ function LoginContent() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Hidden Credentials Overview Modal state
-  const [showCredsModal, setShowCredsModal] = useState(false);
-  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
 
   // Register form state (Citizen only)
   const [regName, setRegName] = useState('');
@@ -273,14 +207,6 @@ function LoginContent() {
     }
   };
 
-  // Autofill credentials from Overview modal
-  const handleAutofill = (userId: string, pass: string) => {
-    setEmailOrId(userId);
-    setPassword(pass);
-    setShowCredsModal(false);
-    setError('');
-    setMode('login');
-  };
 
   return (
     <div suppressHydrationWarning className="min-h-screen relative flex flex-col justify-between overflow-x-hidden bg-slate-900">
@@ -305,15 +231,8 @@ function LoginContent() {
           <span className="text-slate-400">·</span>
           <span className="text-slate-300">Ministry of Rural Development & Ministry of Road Transport</span>
         </div>
-        <div className="flex items-center gap-3 text-xs">
-          <button
-            type="button"
-            onClick={() => setShowCredsModal(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded text-[11px] font-semibold hover:bg-amber-400/30 transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[14px]">vpn_key</span>
-            Official Credentials Directory
-          </button>
+        <div className="flex items-center gap-3 text-xs text-slate-300">
+          <span className="hidden sm:inline text-slate-400">Digital India Initiative</span>
         </div>
       </header>
 
@@ -717,95 +636,6 @@ function LoginContent() {
         </div>
       </main>
 
-      {/* Official Credentials Directory Modal */}
-      {showCredsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl border border-slate-200 overflow-hidden">
-            <div className="p-4 sm:p-5 bg-[var(--color-gov-navy)] text-white flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-base flex items-center gap-2">
-                  <span className="material-symbols-outlined text-amber-400 text-lg">admin_panel_settings</span>
-                  Official Authority Credentials Directory
-                </h3>
-                <p className="text-xs text-slate-300 mt-0.5">
-                  Pre-configured accounts seeded in PostgreSQL with Argon2id encryption. Click to quick-fill.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCredsModal(false)}
-                className="text-slate-300 hover:text-white text-lg font-bold p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto space-y-3 divide-y divide-slate-100">
-              {OFFICIAL_CREDENTIALS.map((cred) => (
-                <div key={cred.role} className="pt-3 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${cred.badgeColor}`}>
-                        {cred.role}
-                      </span>
-                      <span className="font-bold text-xs text-slate-900">{cred.title}</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500">{cred.designation}</div>
-                    <div className="text-xs font-mono text-slate-700">
-                      ID: <span className="font-semibold text-slate-900">{cred.userId}</span>
-                      <span className="text-slate-400 mx-1">|</span>
-                      Short: <span className="font-semibold">{cred.shortId}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase">Password</div>
-                      <div className="font-mono text-xs font-bold text-slate-800">
-                        {revealedPasswords[cred.role] ? cred.password : '••••••••'}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setRevealedPasswords({
-                          ...revealedPasswords,
-                          [cred.role]: !revealedPasswords[cred.role],
-                        })
-                      }
-                      className="p-1.5 text-slate-500 hover:text-slate-700 text-xs"
-                      title={revealedPasswords[cred.role] ? 'Hide' : 'Reveal'}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        {revealedPasswords[cred.role] ? 'visibility_off' : 'visibility'}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAutofill(cred.userId, cred.password)}
-                      className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white rounded text-xs font-semibold hover:bg-slate-800 transition-colors"
-                    >
-                      Autofill
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-3 bg-slate-50 border-t border-slate-200 text-right">
-              <button
-                type="button"
-                onClick={() => setShowCredsModal(false)}
-                className="px-4 py-1.5 border border-slate-300 text-slate-700 rounded text-xs font-semibold hover:bg-slate-100"
-              >
-                Close Directory
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Global Footer */}
       <footer className="relative z-10 text-center py-3 text-xs text-slate-400 border-t border-white/10 bg-slate-950/80 backdrop-blur-md">
