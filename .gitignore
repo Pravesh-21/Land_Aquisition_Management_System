@@ -1,4 +1,8 @@
-# ── Frontend ──────────────────────────────────────────────
+# ── Root leftovers (ignored) ──────────────────────────────
+node_modules/
+.next/
+
+
 frontend/node_modules/
 frontend/.next/
 frontend/.env.local
