@@ -8,7 +8,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   async rewrites() {
-    const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
+    // Only proxy to an external backend when BACKEND_INTERNAL_URL is explicitly set.
+    // On Vercel (no backend), this returns [] so Next.js API routes handle /api/v1/*
+    const backendUrl = process.env.BACKEND_INTERNAL_URL;
+    if (!backendUrl) return [];
+
     return [
       {
         source: '/api/v1/:path*',
