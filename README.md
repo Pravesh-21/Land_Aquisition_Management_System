@@ -262,7 +262,12 @@ pytest tests/ -v
 
 | Name | Role |
 |------|------|
-| *(Add team members)* | *(Add role)* |
+| *Pravesh Shrivastava* | *ML* |
+| *Yash Dudhabale* | *Backend* |
+| *Sachin Mardikar* | *Backend* |
+| *Trisha Katole* | *ML* |
+| *Ruhaan Dubey* | *Frontend* |
+| *Mahi Bhoyar* | *Frontend* |
 
 ---
 
