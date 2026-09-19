@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,9 +14,9 @@ const OFFICIAL_CREDENTIALS = [
     role: 'AGENCY' as UserRole,
     title: 'Requisite Agency (NHAI)',
     designation: 'Project Director (PIU Nagpur)',
-    userId: 'agency@nhai.gov.in',
-    shortId: 'agency',
-    password: 'Agency@123',
+    userId: 'agency@gov.in',
+    shortId: 'agency@gov.in',
+    password: 'password123',
     badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
     targetRoute: '/dashboard/agency',
   },
@@ -23,9 +24,9 @@ const OFFICIAL_CREDENTIALS = [
     role: 'LAO' as UserRole,
     title: 'Land Acquisition Officer (LAO)',
     designation: 'Competent Authority (Pune Division)',
-    userId: 'lao.pune@revenue.gov.in',
-    shortId: 'lao',
-    password: 'LAO@123',
+    userId: 'lao@gov.in',
+    shortId: 'lao@gov.in',
+    password: 'password123',
     badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
     targetRoute: '/dashboard/lao',
   },
@@ -33,9 +34,9 @@ const OFFICIAL_CREDENTIALS = [
     role: 'FOREST' as UserRole,
     title: 'Forest & Environment (MoEFCC)',
     designation: 'Divisional Forest Officer (DFO)',
-    userId: 'dfo.forest@moefcc.gov.in',
-    shortId: 'forest',
-    password: 'Forest@123',
+    userId: 'forest@gov.in',
+    shortId: 'forest@gov.in',
+    password: 'password123',
     badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
     targetRoute: '/dashboard/forest',
   },
@@ -43,9 +44,9 @@ const OFFICIAL_CREDENTIALS = [
     role: 'COLLECTOR' as UserRole,
     title: 'District Collector (IAS)',
     designation: 'District Magistrate & Sanctioning Authority',
-    userId: 'collector.nagpur@gov.in',
-    shortId: 'collector',
-    password: 'Collector@123',
+    userId: 'collector@gov.in',
+    shortId: 'collector@gov.in',
+    password: 'password123',
     badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
     targetRoute: '/dashboard/collector',
   },
@@ -53,29 +54,19 @@ const OFFICIAL_CREDENTIALS = [
     role: 'TEHSILDAR' as UserRole,
     title: 'Revenue Court / Tehsildar',
     designation: 'Executive Magistrate & Dispute Resolver',
-    userId: 'tehsildar.court@revenue.gov.in',
-    shortId: 'tehsildar',
-    password: 'Tehsildar@123',
+    userId: 'tehsildar@gov.in',
+    shortId: 'tehsildar@gov.in',
+    password: 'password123',
     badgeColor: 'bg-rose-100 text-rose-900 border-rose-300',
     targetRoute: '/dashboard/tehsildar',
-  },
-  {
-    role: 'ADMIN' as UserRole,
-    title: 'System Administrator',
-    designation: 'Security & Access Administrator (NIC)',
-    userId: 'admin@gov.in',
-    shortId: 'admin',
-    password: 'Admin@123',
-    badgeColor: 'bg-slate-100 text-slate-900 border-slate-300',
-    targetRoute: '/dashboard/admin',
   },
   {
     role: 'CITIZEN' as UserRole,
     title: 'Citizen / Landowner',
     designation: 'Verified Title Holder (Sh. Rajendra Patel)',
     userId: 'citizen@gov.in',
-    shortId: 'citizen',
-    password: 'Citizen@123',
+    shortId: 'citizen@gov.in',
+    password: 'password123',
     badgeColor: 'bg-teal-100 text-teal-900 border-teal-300',
     targetRoute: '/dashboard/citizen',
   },
@@ -292,7 +283,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col justify-between overflow-x-hidden bg-slate-900">
+    <div suppressHydrationWarning className="min-h-screen relative flex flex-col justify-between overflow-x-hidden bg-slate-900">
       {/* Semi-Transparent (Translucent) Full-Page Background Image */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <Image
@@ -793,7 +784,7 @@ function LoginContent() {
 
                     <button
                       type="button"
-                      onClick={() => handleAutofill(cred.shortId, cred.password)}
+                      onClick={() => handleAutofill(cred.userId, cred.password)}
                       className="px-3 py-1.5 bg-[var(--color-gov-navy)] text-white rounded text-xs font-semibold hover:bg-slate-800 transition-colors"
                     >
                       Autofill
@@ -824,10 +815,13 @@ function LoginContent() {
   );
 }
 
+// Disable SSR to prevent hydration mismatches from browser extensions
+const LoginContentDynamic = dynamic(() => Promise.resolve(LoginContent), { ssr: false });
+
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-500">Loading Portal...</div>}>
-      <LoginContent />
-    </Suspense>
+    <div suppressHydrationWarning>
+      <LoginContentDynamic />
+    </div>
   );
 }

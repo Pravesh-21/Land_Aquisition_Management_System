@@ -165,34 +165,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
-          username: identifier,
-          password: providedPassword,
+          email_or_id: identifier,
+          password_or_otp: providedPassword,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        const primaryRole = (data.user.roles && data.user.roles[0] ? data.user.roles[0].toUpperCase() : 'CITIZEN') as UserRole;
+        // Backend returns: { status, message, token, role, user }
+        const primaryRole = (data.role ? data.role.toUpperCase() : 'CITIZEN') as UserRole;
         const userProfile = mapBackendUser(data.user, primaryRole);
 
         // Store tokens securely in browser storage
-        localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+        localStorage.setItem(ACCESS_TOKEN_KEY, data.token);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.token);
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ role: primaryRole, user: userProfile }));
 
         setAuthState({
           user: userProfile,
           role: primaryRole,
-          token: data.access_token,
+          token: data.token,
           permissions: data.user.permissions || [],
           isAuthenticated: true,
           isLoaded: true,
         });
 
         // If Citizen account is unverified, inform the login flow to prompt verification
-        if (primaryRole === 'CITIZEN' && !data.user.is_verified) {
+        if (primaryRole === 'CITIZEN' && data.user.is_verified === false) {
           return {
             success: true,
             role: primaryRole,

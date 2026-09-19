@@ -1,43 +1,35 @@
-# Next.js
-.next/
-out/
-build/
+# ── Frontend ──────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/.env*.local
+frontend/tsconfig.tsbuildinfo
 
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+# ── Backend ───────────────────────────────────────────────
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/.env
+backend/api/__pycache__/
+backend/alembic/__pycache__/
 
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build artifacts
-tsconfig.tsbuildinfo
-
-# Python
-__pycache__/
+# ── Python general ────────────────────────────────────────
 *.pyc
+__pycache__/
 *.pyo
-*.pyd
-.Python
 *.egg-info/
 dist/
+build/
 .venv/
 venv/
+env/
 
-# Vercel
-.vercel/
-
-# Misc
+# ── OS / IDE ──────────────────────────────────────────────
 .DS_Store
-*.pem
 Thumbs.db
+.vscode/
+.idea/
+
+# ── Docker volumes ────────────────────────────────────────
+postgres_data/

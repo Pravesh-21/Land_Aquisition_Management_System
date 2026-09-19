@@ -18,12 +18,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS Setup
-origins = os.getenv("CORS_ORIGINS", "*").split(",")
+# CORS Setup - explicit origins required when allow_credentials=True
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://192.168.56.1:3000",
+        "http://localhost:3001",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
